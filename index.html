@@ -123,6 +123,14 @@
       opacity: 1;
     }
 
+    select.placeholder-selected {
+      color: var(--placeholder);
+    }
+
+    select option {
+      color: var(--text);
+    }
+
     textarea {
       min-height: 96px;
       resize: vertical;
@@ -442,7 +450,7 @@
         </div>
         <div>
           <label for="cardset">cardset</label>
-          <select id="cardset" required>
+          <select id="cardset" class="placeholder-selected" required>
             <option value="" selected disabled>Select / เลือก</option>
             <option value="card_a">card_set A</option>
             <option value="card_b">card_set B</option>
@@ -589,6 +597,10 @@
     function showMessage(element, text, type) {
       element.textContent = text;
       element.className = text ? `message ${type}` : "message";
+    }
+
+    function updateCardsetPlaceholderStyle() {
+      els.cardset.classList.toggle("placeholder-selected", els.cardset.value === "");
     }
 
     function scrollToPanelTop(panel) {
@@ -935,6 +947,7 @@
       state.submitted = false;
       els.participantId.value = "";
       els.cardset.value = "";
+      updateCardsetPlaceholderStyle();
       clearTrialForm();
       els.setupPanel.style.display = "block";
       els.trialPanel.style.display = "none";
@@ -946,8 +959,10 @@
     updateTodayText();
     setInterval(updateTodayText, 60 * 1000);
     buildRankInputs();
+    updateCardsetPlaceholderStyle();
 
     els.startBtn.addEventListener("click", startSession);
+    els.cardset.addEventListener("change", updateCardsetPlaceholderStyle);
     els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
     els.prevBtn.addEventListener("click", goPreviousTrial);
     els.resetBtn.addEventListener("click", resetSession);
