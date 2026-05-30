@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Thai Font Impression Experiment</title>
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%231f6feb"/><text x="50%25" y="52%25" dominant-baseline="middle" text-anchor="middle" font-size="42" font-family="Arial, sans-serif" font-weight="700" fill="white">%E0%B8%9A</text></svg>'>
   <style>
     :root {
       color-scheme: light;
@@ -77,6 +78,33 @@
       border-radius: 8px;
       box-shadow: var(--shadow);
       padding: 18px;
+    }
+
+    .access-panel {
+      width: min(520px, 100%);
+      margin: 12vh auto 0;
+    }
+
+    .access-panel h1 {
+      margin-bottom: 10px;
+    }
+
+    .access-copy {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .access-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .access-shell[hidden],
+    .page[hidden] {
+      display: none;
     }
 
     .setup-grid {
@@ -419,11 +447,30 @@
       button {
         width: 100%;
       }
+
+      .access-actions {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <main class="page">
+  <section class="access-shell page" id="accessPanel" aria-label="Experiment access">
+    <div class="panel access-panel">
+      <h1>Thai Font Impression Experiment</h1>
+      <p class="access-copy">กรอกรหัสผ่านเพื่อเริ่มการทดลอง / Enter the access code to start.</p>
+      <div class="access-actions">
+        <div>
+          <label for="accessCode">Access code</label>
+          <input id="accessCode" type="password" autocomplete="off" inputmode="text" required>
+        </div>
+        <button id="accessBtn" type="button">Enter</button>
+      </div>
+      <div class="message" id="accessMessage" role="alert"></div>
+    </div>
+  </section>
+
+  <main class="page" id="experimentPage" hidden>
     <header>
       <div>
         <h1>Thai Font Impression Experiment</h1>
@@ -533,6 +580,8 @@
     const CRITERION_CARD_ID_MAX = 15;
     const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwE8eWyqqGTFLd-lMS26ydsNfcCxRSnU3fhi3QE6ktEEhelo8UfpyqK3f97LdCeaFD0/exec";
     const SUBMISSION_TOKEN = "thai-font-exp-2026-05-30";
+    const ACCESS_CODE = "thai2026";
+    const ACCESS_SESSION_KEY = "thaiFontExperimentAccess";
 
     const state = {
       participantId: "",
@@ -546,6 +595,11 @@
 
     const els = {
       todayText: document.getElementById("todayText"),
+      accessPanel: document.getElementById("accessPanel"),
+      experimentPage: document.getElementById("experimentPage"),
+      accessCode: document.getElementById("accessCode"),
+      accessBtn: document.getElementById("accessBtn"),
+      accessMessage: document.getElementById("accessMessage"),
       setupPanel: document.getElementById("setupPanel"),
       setupMessage: document.getElementById("setupMessage"),
       participantId: document.getElementById("participantId"),
@@ -586,6 +640,33 @@
     function showMessage(element, text, type) {
       element.textContent = text;
       element.className = text ? `message ${type}` : "message";
+    }
+
+    function unlockExperiment() {
+      els.accessPanel.hidden = true;
+      els.experimentPage.hidden = false;
+      sessionStorage.setItem(ACCESS_SESSION_KEY, "1");
+      setTimeout(() => els.participantId.focus(), 0);
+    }
+
+    function checkAccessCode() {
+      if (els.accessCode.value.trim() === ACCESS_CODE) {
+        showMessage(els.accessMessage, "", "");
+        unlockExperiment();
+        return;
+      }
+      showMessage(els.accessMessage, "Incorrect access code.", "error");
+      els.accessCode.focus();
+    }
+
+    function initializeAccessGate() {
+      if (sessionStorage.getItem(ACCESS_SESSION_KEY) === "1") {
+        unlockExperiment();
+        return;
+      }
+      els.accessPanel.hidden = false;
+      els.experimentPage.hidden = true;
+      setTimeout(() => els.accessCode.focus(), 0);
     }
 
     function scrollToPanelTop(panel) {
@@ -937,7 +1018,14 @@
     updateTodayText();
     setInterval(updateTodayText, 60 * 1000);
     buildRankInputs();
+    initializeAccessGate();
 
+    els.accessBtn.addEventListener("click", checkAccessCode);
+    els.accessCode.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        checkAccessCode();
+      }
+    });
     els.startBtn.addEventListener("click", startSession);
     els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
     els.prevBtn.addEventListener("click", goPreviousTrial);
