@@ -28,14 +28,17 @@ function doPost(e) {
     validatePayload(payload);
 
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = getOrCreateSheet(spreadsheet);
-    ensureHeaderRow(sheet);
+    const masterSheet = getOrCreateSheet(spreadsheet, SHEET_NAME);
+    const participantSheet = getOrCreateSheet(spreadsheet, participantSheetName(payload));
+    ensureHeaderRow(masterSheet);
+    ensureHeaderRow(participantSheet);
 
-    if (hasSubmission(sheet, payload.submission_id)) {
+    if (hasSubmission(masterSheet, payload.submission_id)) {
       return jsonResponse({
         ok: true,
         duplicate: true,
         rows_written: 0,
+        participant_sheet: participantSheet.getName(),
         submission_id: payload.submission_id
       });
     }
@@ -57,7 +60,8 @@ function doPost(e) {
       ])
     );
 
-    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
+    appendRows(masterSheet, rows);
+    appendRows(participantSheet, rows);
 
     const backups = {
       json_saved: true,
@@ -84,6 +88,7 @@ function doPost(e) {
       ok: true,
       duplicate: false,
       rows_written: rows.length,
+      participant_sheet: participantSheet.getName(),
       backup_saved: backups.json_saved && backups.csv_saved,
       backup_error: [backups.json_error, backups.csv_error].filter(Boolean).join(" "),
       json_backup_saved: backups.json_saved,
@@ -149,8 +154,12 @@ function validatePayload(payload) {
   });
 }
 
-function getOrCreateSheet(spreadsheet) {
-  return spreadsheet.getSheetByName(SHEET_NAME) || spreadsheet.insertSheet(SHEET_NAME);
+function getOrCreateSheet(spreadsheet, sheetName) {
+  return spreadsheet.getSheetByName(sheetName) || spreadsheet.insertSheet(sheetName);
+}
+
+function participantSheetName(payload) {
+  return payload.participant_id;
 }
 
 function ensureHeaderRow(sheet) {
@@ -173,6 +182,10 @@ function hasSubmission(sheet, submissionId) {
 
   const values = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
   return values.some(row => row[0] === submissionId);
+}
+
+function appendRows(sheet, rows) {
+  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
 }
 
 function saveJsonBackup(payload) {

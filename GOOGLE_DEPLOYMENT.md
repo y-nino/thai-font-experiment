@@ -42,7 +42,7 @@ Then commit and publish the updated page.
 
 ## 4. Data Shape
 
-Each completed participant session writes 100 rows to the `responses` sheet:
+Each completed participant session writes 100 rows to the `responses` sheet and to one participant sheet named by `participant_id`, such as `S1`:
 
 - 10 trials
 - 10 rank rows per trial
