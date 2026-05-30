@@ -56,12 +56,22 @@ function doPost(e) {
     );
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
-    saveJsonBackup(payload);
+
+    let backupSaved = true;
+    let backupError = "";
+    try {
+      saveJsonBackup(payload);
+    } catch (error) {
+      backupSaved = false;
+      backupError = error.message;
+    }
 
     return jsonResponse({
       ok: true,
       duplicate: false,
       rows_written: rows.length,
+      backup_saved: backupSaved,
+      backup_error: backupError,
       submission_id: payload.submission_id
     });
   } catch (error) {
@@ -142,7 +152,12 @@ function hasSubmission(sheet, submissionId) {
 function saveJsonBackup(payload) {
   const folder = getOrCreateFolder(JSON_FOLDER_NAME);
   const filename = `${payload.submission_id}.json`;
-  folder.createFile(filename, JSON.stringify(payload, null, 2), MimeType.JSON);
+  const blob = Utilities.newBlob(
+    JSON.stringify(payload, null, 2),
+    "application/json",
+    filename
+  );
+  folder.createFile(blob);
 }
 
 function getOrCreateFolder(name) {
