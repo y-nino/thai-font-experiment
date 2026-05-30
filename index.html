@@ -306,6 +306,10 @@
       font-weight: 700;
     }
 
+    .rank-input::placeholder {
+      font-size: 17px;
+    }
+
     .message {
       display: none;
       margin: 12px 0 0;
@@ -484,11 +488,11 @@
 
       <div>
         <label for="judgmentBasis">Judgment basis / เหตุผลในการตัดสิน *</label>
-        <textarea id="judgmentBasis" placeholder="What kinds of elements made you feel that this impression was strong or weak? / องค์ประกอบแบบใดที่ทำให้คุณรู้สึกว่าความประทับใจนี้มีมากหรือน้อย?" required></textarea>
+        <textarea id="judgmentBasis" placeholder="องค์ประกอบแบบใดที่ทำให้คุณรู้สึกว่าความประทับใจนี้มีมากหรือน้อย? / What kinds of elements made you feel that this impression was strong or weak?" required></textarea>
       </div>
 
       <div class="button-row">
-        <button id="saveTrialBtn" type="button">Save this trial / บันทึกการจัดอันดับครั้งนี้</button>
+        <button id="saveTrialBtn" type="button">บันทึกการจัดอันดับครั้งนี้ / Save this trial</button>
       </div>
       <div class="message" id="trialMessage" role="alert"></div>
       <div class="saved-list" id="savedList"></div>
