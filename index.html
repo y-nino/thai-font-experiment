@@ -460,8 +460,8 @@
       </div>
 
       <div class="ranking-instruction">
-        <p>Enter the letter from the upper-right corner of each sorted physical card below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. You can enter lowercase or uppercase letters.</p>
-        <p>กรอกตัวอักษรที่มุมขวาบนของการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด สามารถกรอกตัวพิมพ์เล็กหรือพิมพ์ใหญ่ได้</p>
+        <p>กรอก card_id ที่มุมขวาบนของการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด สามารถกรอกตัวพิมพ์เล็กหรือพิมพ์ใหญ่ได้</p>
+        <p>Enter the card_id from the upper-right corner of each sorted physical card below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. You can enter lowercase or uppercase letters.</p>
       </div>
 
       <div class="card-id-guide" aria-label="Card ID location guide">
@@ -470,13 +470,13 @@
           <rect x="14" y="14" width="112" height="112" rx="2" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"></rect>
           <line x1="34" y1="62" x2="82" y2="62" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
           <line x1="34" y1="82" x2="92" y2="82" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
-          <circle cx="101" cy="38" r="20" fill="none" stroke="#1f6feb" stroke-width="5"></circle>
+          <circle cx="101" cy="38" r="20" fill="none" stroke="#d97706" stroke-width="5"></circle>
           <text x="92" y="47" font-size="26" font-weight="800" fill="#111827">A</text>
         </svg>
         <div>
           <p class="guide-title">Where to find the card_id</p>
-          <p class="guide-copy">Use the small letter in the upper-right corner of each physical card.</p>
-          <p class="guide-copy">ใช้ตัวอักษรขนาดเล็กที่มุมขวาบนของการ์ดจริง</p>
+          <p class="guide-copy">ใช้ card_id ที่มุมขวาบนของการ์ดจริง</p>
+          <p class="guide-copy">Use the card_id in the upper-right corner of each physical card.</p>
         </div>
       </div>
 
@@ -632,7 +632,7 @@
         input.inputMode = "text";
         input.maxLength = 1;
         input.autocapitalize = "characters";
-        input.placeholder = rank === 1 ? "A-J" : "";
+        input.placeholder = rank === 1 ? "card_id" : "";
         input.dataset.rank = String(rank);
         input.setAttribute("aria-label", `Rank ${rank} card_id`);
         input.addEventListener("input", () => cleanCardIdInput(input));
