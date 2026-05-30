@@ -1,5 +1,6 @@
 const SHEET_NAME = "responses";
 const JSON_FOLDER_NAME = "thai_font_experiment_json_backup";
+const CSV_FOLDER_NAME = "thai_font_experiment_csv_backup";
 const SPREADSHEET_ID = "1Cve3Jz5TAMvUyGzq2iCxjLmToDc40egnZkDOxMbdfb8";
 
 const HEADERS = [
@@ -57,21 +58,37 @@ function doPost(e) {
 
     sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
 
-    let backupSaved = true;
-    let backupError = "";
+    const backups = {
+      json_saved: true,
+      json_error: "",
+      csv_saved: true,
+      csv_error: ""
+    };
+
     try {
       saveJsonBackup(payload);
     } catch (error) {
-      backupSaved = false;
-      backupError = error.message;
+      backups.json_saved = false;
+      backups.json_error = error.message;
+    }
+
+    try {
+      saveCsvBackup(payload);
+    } catch (error) {
+      backups.csv_saved = false;
+      backups.csv_error = error.message;
     }
 
     return jsonResponse({
       ok: true,
       duplicate: false,
       rows_written: rows.length,
-      backup_saved: backupSaved,
-      backup_error: backupError,
+      backup_saved: backups.json_saved && backups.csv_saved,
+      backup_error: [backups.json_error, backups.csv_error].filter(Boolean).join(" "),
+      json_backup_saved: backups.json_saved,
+      json_backup_error: backups.json_error,
+      csv_backup_saved: backups.csv_saved,
+      csv_backup_error: backups.csv_error,
       submission_id: payload.submission_id
     });
   } catch (error) {
@@ -158,6 +175,50 @@ function saveJsonBackup(payload) {
     filename
   );
   folder.createFile(blob);
+}
+
+function saveCsvBackup(payload) {
+  const folder = getOrCreateFolder(CSV_FOLDER_NAME);
+  const filename = `${payload.submission_id}.csv`;
+  const blob = Utilities.newBlob(
+    toCsv(payload),
+    "text/csv",
+    filename
+  );
+  folder.createFile(blob);
+}
+
+function toCsv(payload) {
+  const rows = [HEADERS];
+
+  payload.trials.forEach(trial => {
+    trial.ranking.forEach(item => {
+      rows.push([
+        payload.submission_id,
+        payload.submitted_at,
+        payload.experiment_id,
+        payload.participant_id,
+        payload.cardset,
+        payload.date,
+        trial.trial_id,
+        trial.criterion_card_id,
+        trial.criterion_label,
+        item.rank,
+        item.card_id,
+        trial.judgment_basis
+      ]);
+    });
+  });
+
+  return rows.map(row => row.map(escapeCsv).join(",")).join("\n");
+}
+
+function escapeCsv(value) {
+  const text = value === null || value === undefined ? "" : String(value);
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
 }
 
 function getOrCreateFolder(name) {

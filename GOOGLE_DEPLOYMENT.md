@@ -47,7 +47,10 @@ Each completed participant session writes 100 rows to the `responses` sheet:
 - 10 trials
 - 10 rank rows per trial
 
-The script also saves one JSON backup file per submission in a Drive folder named `thai_font_experiment_json_backup`.
+The script also saves backup files for each submission:
+
+- JSON: `thai_font_experiment_json_backup`
+- CSV: `thai_font_experiment_csv_backup`
 
 ## 5. Important Browser Note
 
