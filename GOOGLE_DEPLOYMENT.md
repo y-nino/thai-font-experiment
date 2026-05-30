@@ -7,6 +7,14 @@
 3. Paste the contents of `google_apps_script.gs` into the Apps Script editor.
 4. Save the project.
 
+The current script is configured to write to this spreadsheet:
+
+```text
+1Cve3Jz5TAMvUyGzq2iCxjLmToDc40egnZkDOxMbdfb8
+```
+
+If you create a different response spreadsheet, replace `SPREADSHEET_ID` in `google_apps_script.gs`.
+
 ## 2. Deploy the Web App
 
 1. In Apps Script, click `Deploy` -> `New deployment`.

@@ -1,5 +1,6 @@
 const SHEET_NAME = "responses";
 const JSON_FOLDER_NAME = "thai_font_experiment_json_backup";
+const SPREADSHEET_ID = "1Cve3Jz5TAMvUyGzq2iCxjLmToDc40egnZkDOxMbdfb8";
 
 const HEADERS = [
   "submission_id",
@@ -24,7 +25,7 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     validatePayload(payload);
 
-    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = getOrCreateSheet(spreadsheet);
     ensureHeaderRow(sheet);
 
