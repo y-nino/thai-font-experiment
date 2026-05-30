@@ -441,8 +441,9 @@
           <input id="participantId" type="text" autocomplete="off" placeholder="Example: S1" required>
         </div>
         <div>
-          <label for="cardset">Select card_set / เลือกชุดการ์ด</label>
-          <select id="cardset">
+          <label for="cardset">cardset</label>
+          <select id="cardset" required>
+            <option value="" selected disabled>Select / เลือก</option>
             <option value="card_a">card_set A</option>
             <option value="card_b">card_set B</option>
           </select>
@@ -538,7 +539,7 @@
 
     const state = {
       participantId: "",
-      cardset: "card_a",
+      cardset: "",
       totalTrials: TOTAL_TRIALS,
       currentTrialIndex: 0,
       trials: [],
@@ -786,6 +787,12 @@
       state.participantId = normalizedParticipantId;
       els.participantId.value = normalizedParticipantId;
       state.cardset = els.cardset.value;
+
+      if (state.cardset === "") {
+        showMessage(els.setupMessage, "cardset is required.", "error");
+        return;
+      }
+
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
       state.trials = [];
@@ -920,14 +927,14 @@
         return;
       }
       state.participantId = "";
-      state.cardset = "card_a";
+      state.cardset = "";
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
       state.trials = [];
       state.submissionId = "";
       state.submitted = false;
       els.participantId.value = "";
-      els.cardset.value = "card_a";
+      els.cardset.value = "";
       clearTrialForm();
       els.setupPanel.style.display = "block";
       els.trialPanel.style.display = "none";
