@@ -368,28 +368,12 @@
         padding: 14px;
       }
 
-      .trial-head {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        margin: -14px -14px 16px;
-        padding: 14px;
-        background: var(--panel);
-        border-bottom: 1px solid var(--line);
-        box-shadow: 0 6px 16px rgba(31, 41, 51, 0.08);
-      }
-
       .rank-grid {
         grid-template-columns: 1fr;
       }
 
       .card-id-guide {
         grid-template-columns: 1fr;
-      }
-
-      .card-id-guide svg {
-        width: min(230px, 70vw);
-        margin: 0 auto;
       }
 
       .rank-row {
@@ -443,7 +427,7 @@
           </div>
         </div>
         <div class="button-row">
-          <button class="secondary" id="prevBtn" type="button">Previous trial / ย้อนกลับ</button>
+          <button class="secondary" id="prevBtn" type="button">Previous trial</button>
           <button class="danger" id="resetBtn" type="button">Reset / รีเซ็ต</button>
         </div>
       </div>
@@ -498,7 +482,6 @@
       <h2>All trials saved</h2>
       <p id="completeSummary"></p>
       <div class="button-row">
-        <button id="submitGoogleBtn" type="button">Submit to Google Drive / ส่งข้อมูล</button>
         <button id="downloadJsonBtn" type="button">Export JSON</button>
         <button id="downloadCsvBtn" type="button">Export CSV</button>
         <button class="secondary" id="editLastBtn" type="button">Edit last trial</button>
@@ -516,16 +499,13 @@
     const CARD_ID_MAX = 40;
     const CRITERION_CARD_ID_MIN = 1;
     const CRITERION_CARD_ID_MAX = 15;
-    const APPS_SCRIPT_WEB_APP_URL = "";
 
     const state = {
       participantId: "",
       cardset: "card_a",
       totalTrials: TOTAL_TRIALS,
       currentTrialIndex: 0,
-      trials: [],
-      submissionId: "",
-      submitted: false
+      trials: []
     };
 
     const els = {
@@ -549,7 +529,6 @@
       savedList: document.getElementById("savedList"),
       completePanel: document.getElementById("completePanel"),
       completeSummary: document.getElementById("completeSummary"),
-      submitGoogleBtn: document.getElementById("submitGoogleBtn"),
       downloadJsonBtn: document.getElementById("downloadJsonBtn"),
       downloadCsvBtn: document.getElementById("downloadCsvBtn"),
       editLastBtn: document.getElementById("editLastBtn"),
@@ -572,23 +551,6 @@
     function showMessage(element, text, type) {
       element.textContent = text;
       element.className = text ? `message ${type}` : "message";
-    }
-
-    function scrollToPanelTop(panel) {
-      requestAnimationFrame(() => {
-        panel.scrollIntoView({
-          block: "start",
-          behavior: "smooth"
-        });
-      });
-    }
-
-    function focusCriterionLabelWithoutScroll() {
-      try {
-        els.criterionLabel.focus({ preventScroll: true });
-      } catch (error) {
-        els.criterionLabel.focus();
-      }
     }
 
     function parseCardId(value) {
@@ -738,8 +700,7 @@
     function showCompleteScreen() {
       els.trialPanel.style.display = "none";
       els.completePanel.style.display = "block";
-      els.completeSummary.textContent = `${state.participantId}, ${state.cardset}, ${state.totalTrials} trials saved. Submit to Google Drive, then keep CSV/JSON as backup if needed.`;
-      els.submitGoogleBtn.disabled = state.submitted;
+      els.completeSummary.textContent = `${state.participantId}, ${state.cardset}, ${state.totalTrials} trials saved.`;
       showMessage(els.exportMessage, "", "");
     }
 
@@ -762,8 +723,6 @@
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
       state.trials = [];
-      state.submissionId = "";
-      state.submitted = false;
       showMessage(els.setupMessage, "", "");
       showTrialScreen();
       setTimeout(() => els.criterionLabel.focus(), 0);
@@ -794,7 +753,6 @@
       if (state.currentTrialIndex + 1 >= state.totalTrials) {
         renderProgress();
         showCompleteScreen();
-        scrollToPanelTop(els.completePanel);
         return;
       }
 
@@ -802,8 +760,7 @@
       clearTrialForm();
       renderProgress();
       showMessage(els.trialMessage, `Trial ${trial.trial_id} saved.`, "success");
-      scrollToPanelTop(els.trialPanel);
-      setTimeout(focusCriterionLabelWithoutScroll, 0);
+      setTimeout(() => els.criterionLabel.focus(), 0);
     }
 
     function goPreviousTrial() {
@@ -820,26 +777,12 @@
         participant_id: state.participantId,
         cardset: state.cardset,
         date: localDateString(),
-        submitted_at: new Date().toISOString(),
-        submission_id: state.submissionId || createSubmissionId(),
         total_trials: state.totalTrials,
         cards_per_trial: CARDS_PER_TRIAL,
         card_id_range: [CARD_ID_MIN, CARD_ID_MAX],
         criterion_card_id_range: [CRITERION_CARD_ID_MIN, CRITERION_CARD_ID_MAX],
         trials: state.trials
       };
-    }
-
-    function createSubmissionId() {
-      if (state.submissionId !== "") return state.submissionId;
-      const randomPart = Math.random().toString(36).slice(2, 10);
-      state.submissionId = `${safeName(state.participantId)}_${state.cardset}_${Date.now()}_${randomPart}`;
-      return state.submissionId;
-    }
-
-    function canSubmitData(data) {
-      return data.trials.length === data.total_trials &&
-        data.trials.every(trial => trial.ranking.length === data.cards_per_trial);
     }
 
     function escapeCsv(value) {
@@ -911,42 +854,6 @@
       showMessage(els.exportMessage, `CSV exported: ${filename}`, "success");
     }
 
-    async function submitToGoogleDrive() {
-      const data = experimentData();
-
-      if (!canSubmitData(data)) {
-        showMessage(els.exportMessage, "Submission blocked: all 10 trials must be saved before submitting.", "error");
-        return;
-      }
-      if (APPS_SCRIPT_WEB_APP_URL === "") {
-        showMessage(els.exportMessage, "Google submission is not configured yet. Deploy google_apps_script.gs, then paste the Web App URL into APPS_SCRIPT_WEB_APP_URL.", "error");
-        return;
-      }
-      if (state.submitted) {
-        showMessage(els.exportMessage, "This session has already been submitted. Export CSV/JSON if you need a local backup.", "success");
-        return;
-      }
-
-      els.submitGoogleBtn.disabled = true;
-      showMessage(els.exportMessage, "Submitting to Google Drive...", "success");
-
-      try {
-        await fetch(APPS_SCRIPT_WEB_APP_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(data)
-        });
-        state.submitted = true;
-        showMessage(els.exportMessage, "Submission request sent to Google Drive. Please keep CSV/JSON backup if network reliability is uncertain.", "success");
-      } catch (error) {
-        els.submitGoogleBtn.disabled = false;
-        showMessage(els.exportMessage, "Submission failed. Please export CSV/JSON as backup and try again when online.", "error");
-      }
-    }
-
     function editLastTrial() {
       state.currentTrialIndex = Math.max(0, state.trials.length - 1);
       showTrialScreen();
@@ -961,8 +868,6 @@
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
       state.trials = [];
-      state.submissionId = "";
-      state.submitted = false;
       els.participantId.value = "";
       els.cardset.value = "card_a";
       clearTrialForm();
@@ -981,7 +886,6 @@
     els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
     els.prevBtn.addEventListener("click", goPreviousTrial);
     els.resetBtn.addEventListener("click", resetSession);
-    els.submitGoogleBtn.addEventListener("click", submitToGoogleDrive);
     els.downloadJsonBtn.addEventListener("click", downloadJson);
     els.downloadCsvBtn.addEventListener("click", downloadCsv);
     els.editLastBtn.addEventListener("click", editLastTrial);
