@@ -1,0 +1,23 @@
+const data = {
+  "experiment_id": "thai_card_grouping_test",
+  "participant_id": "P001",
+  "date": "2026-05-19",
+  "total_trials": 10,
+  "cards_per_group": 10,
+  "total_cards_per_trial": 40,
+  "trials": [
+    {
+      "trial_id": 1,
+      "groups": [
+        {
+          "group_id": 1,
+          "card_ids": [1, 5, 8, 12, 16, 20, 24, 28, 32, 36],
+          "criterion": "看起来比较正式，线条稳定",
+          "note": ""
+        }
+      ]
+    }
+  ]
+};
+
+console.log(data.trials[0].groups[0].card_ids);

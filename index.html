@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Thai Font Impression Experiment</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f4;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --placeholder: #7fa39b;
+      --line: #d8ded8;
+      --accent: #256f6c;
+      --accent-dark: #1d5856;
+      --danger: #b42318;
+      --danger-bg: #fff3f0;
+      --ok: #237a45;
+      --ok-bg: #eef8f1;
+      --field: #fbfcfb;
+      --shadow: 0 8px 26px rgba(31, 41, 51, 0.08);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .page {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 24px 18px 36px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 2px 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 34px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #bfc9c4;
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--text);
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 111, 108, 0.16);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--placeholder);
+      opacity: 1;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      min-height: 48px;
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 16px;
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.secondary {
+      background: #e6ece9;
+      color: var(--text);
+    }
+
+    button.secondary:hover {
+      background: #d7e1dd;
+    }
+
+    button.danger {
+      background: #fff0ed;
+      color: var(--danger);
+      border: 1px solid #ffd2ca;
+    }
+
+    button.danger:hover {
+      background: #ffe4df;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .trial-shell,
+    .complete-panel {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .trial-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .trial-title,
+    .complete-panel h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .progress {
+      height: 10px;
+      background: #e8eeeb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 160ms ease;
+    }
+
+    .trial-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card-id-guide {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      margin: 12px 0 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f3f7f5;
+    }
+
+    .card-id-guide svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+    }
+
+    .guide-title {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 750;
+    }
+
+    .guide-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .ranking-instruction {
+      margin: 0 0 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fcfdfc;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    .ranking-instruction p {
+      margin: 0;
+    }
+
+    .ranking-instruction p + p {
+      margin-top: 6px;
+    }
+
+    .rank-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 132px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fcfdfc;
+    }
+
+    .rank-label {
+      font-weight: 750;
+      font-size: 15px;
+    }
+
+    .rank-hint {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    .rank-input {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .message {
+      display: none;
+      margin: 12px 0 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-weight: 650;
+    }
+
+    .message.error {
+      display: block;
+      color: var(--danger);
+      background: var(--danger-bg);
+      border: 1px solid #ffd0c7;
+    }
+
+    .message.success {
+      display: block;
+      color: var(--ok);
+      background: var(--ok-bg);
+      border: 1px solid #bde6c8;
+    }
+
+    .complete-panel p,
+    .saved-list {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .complete-panel p {
+      margin: 0 0 16px;
+    }
+
+    .saved-list {
+      margin-top: 14px;
+    }
+
+    @media (max-width: 780px) {
+      .setup-grid,
+      .trial-fields {
+        grid-template-columns: 1fr;
+      }
+
+      header,
+      .trial-head {
+        display: block;
+      }
+
+      .meta {
+        margin-top: 6px;
+        white-space: normal;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding: 16px 12px 28px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .rank-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-id-guide {
+        grid-template-columns: 1fr;
+      }
+
+      .rank-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div>
+        <h1>Thai Font Impression Experiment</h1>
+        <div class="meta">Data Entry Form for Card Ranking Task</div>
+      </div>
+      <div class="meta" id="todayText"></div>
+    </header>
+
+    <section class="panel" id="setupPanel" aria-label="Experiment setup">
+      <div class="setup-grid">
+        <div>
+          <label for="participantId">participant_id</label>
+          <input id="participantId" type="text" autocomplete="off" placeholder="Example: S1" required>
+        </div>
+        <div>
+          <label for="cardset">cardset</label>
+          <select id="cardset">
+            <option value="card_a">card_a</option>
+            <option value="card_b">card_b</option>
+          </select>
+        </div>
+        <div>
+          <button id="startBtn" type="button">Start</button>
+        </div>
+      </div>
+      <div class="message" id="setupMessage" role="alert"></div>
+    </section>
+
+    <section class="panel trial-shell" id="trialPanel" aria-label="Trial data entry">
+      <div class="trial-head">
+        <div>
+          <h2 class="trial-title" id="trialTitle">Trial 1 / 10</h2>
+          <div class="progress" aria-hidden="true">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+        <div class="button-row">
+          <button class="secondary" id="prevBtn" type="button">Previous trial</button>
+          <button class="danger" id="resetBtn" type="button">Reset / รีเซ็ต</button>
+        </div>
+      </div>
+
+      <div class="trial-fields">
+        <div>
+          <label for="criterionLabel">criterion_label *</label>
+          <input id="criterionLabel" type="text" autocomplete="off" placeholder="Example: Formal" required>
+        </div>
+        <div>
+          <label for="criterionCardId">criterion_card_id *</label>
+          <input id="criterionCardId" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="Example: 2" required>
+        </div>
+      </div>
+
+      <div class="ranking-instruction">
+        <p>Enter the card_id from your sorted physical cards below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. Enter numbers only: a7 / b7 should be entered as 7.</p>
+        <p>กรอก card_id จากการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด กรอกเฉพาะตัวเลข: a7 / b7 ให้กรอกเป็น 7</p>
+      </div>
+
+      <div class="card-id-guide" aria-label="Card ID location guide">
+        <svg viewBox="0 0 140 140" role="img" aria-labelledby="cardIdGuideTitle">
+          <title id="cardIdGuideTitle">Example card showing card ID in the upper-right corner</title>
+          <rect x="14" y="14" width="112" height="112" rx="2" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"></rect>
+          <line x1="34" y1="62" x2="82" y2="62" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
+          <line x1="34" y1="82" x2="92" y2="82" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
+          <circle cx="101" cy="38" r="20" fill="none" stroke="#d83a86" stroke-width="5"></circle>
+          <text x="88" y="47" font-size="26" font-weight="800" fill="#111827">a7</text>
+        </svg>
+        <div>
+          <p class="guide-title">Where to find the card_id</p>
+          <p class="guide-copy">Use the small code in the upper-right corner of each physical card.</p>
+          <p class="guide-copy">ใช้รหัสขนาดเล็กที่มุมขวาบนของการ์ดจริง</p>
+        </div>
+      </div>
+
+      <div class="rank-grid" id="rankGrid"></div>
+
+      <div>
+        <label for="judgmentBasis">Judgment basis / เหตุผลในการตัดสิน *</label>
+        <textarea id="judgmentBasis" placeholder="What kinds of elements made you feel that this impression was strong or weak? / องค์ประกอบแบบใดที่ทำให้คุณรู้สึกว่าความประทับใจนี้มีมากหรือน้อย?" required></textarea>
+      </div>
+
+      <div class="button-row">
+        <button id="saveTrialBtn" type="button">Save this trial / บันทึกการจัดอันดับครั้งนี้</button>
+      </div>
+      <div class="message" id="trialMessage" role="alert"></div>
+      <div class="saved-list" id="savedList"></div>
+    </section>
+
+    <section class="panel complete-panel" id="completePanel" aria-label="Export data">
+      <h2>All trials saved</h2>
+      <p id="completeSummary"></p>
+      <div class="button-row">
+        <button id="downloadJsonBtn" type="button">Export JSON</button>
+        <button id="downloadCsvBtn" type="button">Export CSV</button>
+        <button class="secondary" id="editLastBtn" type="button">Edit last trial</button>
+        <button class="danger" id="newSessionBtn" type="button">New session</button>
+      </div>
+      <div class="message" id="exportMessage" role="status"></div>
+    </section>
+  </main>
+
+  <script>
+    const EXPERIMENT_ID = "thai_card_ranking_test";
+    const TOTAL_TRIALS = 10;
+    const CARDS_PER_TRIAL = 10;
+    const CARD_ID_MIN = 1;
+    const CARD_ID_MAX = 40;
+    const CRITERION_CARD_ID_MIN = 1;
+    const CRITERION_CARD_ID_MAX = 15;
+
+    const state = {
+      participantId: "",
+      cardset: "card_a",
+      totalTrials: TOTAL_TRIALS,
+      currentTrialIndex: 0,
+      trials: []
+    };
+
+    const els = {
+      todayText: document.getElementById("todayText"),
+      setupPanel: document.getElementById("setupPanel"),
+      setupMessage: document.getElementById("setupMessage"),
+      participantId: document.getElementById("participantId"),
+      cardset: document.getElementById("cardset"),
+      startBtn: document.getElementById("startBtn"),
+      trialPanel: document.getElementById("trialPanel"),
+      trialTitle: document.getElementById("trialTitle"),
+      progressBar: document.getElementById("progressBar"),
+      prevBtn: document.getElementById("prevBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      criterionLabel: document.getElementById("criterionLabel"),
+      criterionCardId: document.getElementById("criterionCardId"),
+      judgmentBasis: document.getElementById("judgmentBasis"),
+      rankGrid: document.getElementById("rankGrid"),
+      saveTrialBtn: document.getElementById("saveTrialBtn"),
+      trialMessage: document.getElementById("trialMessage"),
+      savedList: document.getElementById("savedList"),
+      completePanel: document.getElementById("completePanel"),
+      completeSummary: document.getElementById("completeSummary"),
+      downloadJsonBtn: document.getElementById("downloadJsonBtn"),
+      downloadCsvBtn: document.getElementById("downloadCsvBtn"),
+      editLastBtn: document.getElementById("editLastBtn"),
+      newSessionBtn: document.getElementById("newSessionBtn"),
+      exportMessage: document.getElementById("exportMessage")
+    };
+
+    function localDateString() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function updateTodayText() {
+      els.todayText.textContent = localDateString();
+    }
+
+    function showMessage(element, text, type) {
+      element.textContent = text;
+      element.className = text ? `message ${type}` : "message";
+    }
+
+    function parseCardId(value) {
+      const trimmed = String(value).trim();
+      if (trimmed === "") return null;
+      if (!/^\d+$/.test(trimmed)) return NaN;
+      return Number(trimmed);
+    }
+
+    function normalizeParticipantId(value) {
+      const match = String(value).trim().match(/^s([1-9]|[1-3][0-9]|40)$/i);
+      return match ? `S${Number(match[1])}` : null;
+    }
+
+    function buildRankInputs() {
+      els.rankGrid.innerHTML = "";
+      for (let rank = 1; rank <= CARDS_PER_TRIAL; rank += 1) {
+        const row = document.createElement("div");
+        row.className = "rank-row";
+
+        const label = document.createElement("div");
+        label.className = "rank-label";
+        label.textContent = `Rank ${rank}`;
+
+        const hint = document.createElement("span");
+        hint.className = "rank-hint";
+        if (rank === 1) hint.textContent = "มากที่สุด";
+        if (rank === CARDS_PER_TRIAL) hint.textContent = "น้อยที่สุด";
+        if (hint.textContent !== "") label.appendChild(hint);
+
+        const input = document.createElement("input");
+        input.className = "rank-input";
+        input.type = "number";
+        input.inputMode = "numeric";
+        input.min = String(CARD_ID_MIN);
+        input.max = String(CARD_ID_MAX);
+        input.step = "1";
+        input.placeholder = rank === 1 ? "card_id" : "";
+        input.dataset.rank = String(rank);
+        input.setAttribute("aria-label", `Rank ${rank} card_id`);
+
+        row.appendChild(label);
+        row.appendChild(input);
+        els.rankGrid.appendChild(row);
+      }
+    }
+
+    function rankInputs() {
+      return Array.from(els.rankGrid.querySelectorAll(".rank-input"));
+    }
+
+    function collectTrialForm() {
+      const ranking = rankInputs().map((input, index) => ({
+        rank: index + 1,
+        card_id: parseCardId(input.value)
+      }));
+
+      return {
+        criterion_label: els.criterionLabel.value.trim(),
+        criterion_card_id: parseCardId(els.criterionCardId.value),
+        judgment_basis: els.judgmentBasis.value.trim(),
+        ranking
+      };
+    }
+
+    function validateTrial(form) {
+      const errors = [];
+      const missingRanks = form.ranking
+        .filter(item => item.card_id === null)
+        .map(item => item.rank);
+      const invalidRanks = form.ranking
+        .filter(item => Number.isNaN(item.card_id) || item.card_id < CARD_ID_MIN || item.card_id > CARD_ID_MAX)
+        .map(item => item.rank);
+      const ids = form.ranking
+        .map(item => item.card_id)
+        .filter(id => id !== null && !Number.isNaN(id));
+      const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+      const uniqueDuplicates = Array.from(new Set(duplicates));
+
+      if (missingRanks.length > 0) {
+        errors.push(`Missing card_id for rank(s): ${missingRanks.join(", ")}.`);
+      }
+      if (form.ranking.length !== CARDS_PER_TRIAL || missingRanks.length > 0) {
+        errors.push(`Each trial must contain exactly ${CARDS_PER_TRIAL} card_id values.`);
+      }
+      if (uniqueDuplicates.length > 0) {
+        errors.push(`Duplicate card_id value(s): ${uniqueDuplicates.join(", ")}.`);
+      }
+      if (invalidRanks.length > 0) {
+        errors.push(`card_id must be an integer from ${CARD_ID_MIN} to ${CARD_ID_MAX}. Invalid rank(s): ${invalidRanks.join(", ")}.`);
+      }
+      if (form.criterion_card_id === null) {
+        errors.push("criterion_card_id is required.");
+      } else if (Number.isNaN(form.criterion_card_id) || form.criterion_card_id < CRITERION_CARD_ID_MIN || form.criterion_card_id > CRITERION_CARD_ID_MAX) {
+        errors.push(`criterion_card_id must be an integer from ${CRITERION_CARD_ID_MIN} to ${CRITERION_CARD_ID_MAX}.`);
+      }
+      if (form.criterion_label === "") {
+        errors.push("criterion_label is required.");
+      }
+      if (form.judgment_basis === "") {
+        errors.push("Judgment basis / เหตุผลในการตัดสิน is required.");
+      }
+
+      return errors;
+    }
+
+    function clearTrialForm() {
+      els.criterionLabel.value = "";
+      els.criterionCardId.value = "";
+      els.judgmentBasis.value = "";
+      rankInputs().forEach(input => {
+        input.value = "";
+      });
+      showMessage(els.trialMessage, "", "");
+    }
+
+    function loadTrialForm(trial) {
+      els.criterionLabel.value = trial ? trial.criterion_label : "";
+      els.criterionCardId.value = trial && trial.criterion_card_id !== null ? trial.criterion_card_id : "";
+      els.judgmentBasis.value = trial ? trial.judgment_basis : "";
+      rankInputs().forEach((input, index) => {
+        input.value = trial && trial.ranking[index] ? trial.ranking[index].card_id : "";
+      });
+      showMessage(els.trialMessage, "", "");
+    }
+
+    function renderProgress() {
+      const trialNumber = state.currentTrialIndex + 1;
+      els.trialTitle.textContent = `Trial ${trialNumber} / ${state.totalTrials}`;
+      els.progressBar.style.width = `${Math.round((state.trials.length / state.totalTrials) * 100)}%`;
+      els.prevBtn.disabled = state.currentTrialIndex === 0;
+
+      const savedCount = state.trials.length;
+      els.savedList.textContent = savedCount === 0
+        ? "Saved trials: 0"
+        : `Saved trials: ${savedCount} / ${state.totalTrials}`;
+    }
+
+    function showTrialScreen() {
+      els.setupPanel.style.display = "none";
+      els.completePanel.style.display = "none";
+      els.trialPanel.style.display = "block";
+      renderProgress();
+      loadTrialForm(state.trials[state.currentTrialIndex]);
+    }
+
+    function showCompleteScreen() {
+      els.trialPanel.style.display = "none";
+      els.completePanel.style.display = "block";
+      els.completeSummary.textContent = `${state.participantId}, ${state.cardset}, ${state.totalTrials} trials saved.`;
+      showMessage(els.exportMessage, "", "");
+    }
+
+    function startSession() {
+      const participantId = els.participantId.value.trim();
+      const normalizedParticipantId = normalizeParticipantId(participantId);
+
+      if (participantId === "") {
+        showMessage(els.setupMessage, "participant_id is required.", "error");
+        return;
+      }
+      if (normalizedParticipantId === null) {
+        showMessage(els.setupMessage, "participant_id must be S followed by a number from 1 to 40, for example S1.", "error");
+        return;
+      }
+
+      state.participantId = normalizedParticipantId;
+      els.participantId.value = normalizedParticipantId;
+      state.cardset = els.cardset.value;
+      state.totalTrials = TOTAL_TRIALS;
+      state.currentTrialIndex = 0;
+      state.trials = [];
+      showMessage(els.setupMessage, "", "");
+      showTrialScreen();
+      setTimeout(() => els.criterionLabel.focus(), 0);
+    }
+
+    function saveCurrentTrial() {
+      const form = collectTrialForm();
+      const errors = validateTrial(form);
+
+      if (errors.length > 0) {
+        showMessage(els.trialMessage, errors.join(" "), "error");
+        return;
+      }
+
+      const trial = {
+        trial_id: state.currentTrialIndex + 1,
+        criterion_card_id: form.criterion_card_id,
+        criterion_label: form.criterion_label,
+        judgment_basis: form.judgment_basis,
+        ranking: form.ranking.map(item => ({
+          rank: item.rank,
+          card_id: item.card_id
+        }))
+      };
+
+      state.trials[state.currentTrialIndex] = trial;
+
+      if (state.currentTrialIndex + 1 >= state.totalTrials) {
+        renderProgress();
+        showCompleteScreen();
+        return;
+      }
+
+      state.currentTrialIndex += 1;
+      clearTrialForm();
+      renderProgress();
+      showMessage(els.trialMessage, `Trial ${trial.trial_id} saved.`, "success");
+      setTimeout(() => els.criterionLabel.focus(), 0);
+    }
+
+    function goPreviousTrial() {
+      if (state.currentTrialIndex === 0) return;
+      state.currentTrialIndex -= 1;
+      renderProgress();
+      loadTrialForm(state.trials[state.currentTrialIndex]);
+      setTimeout(() => els.criterionLabel.focus(), 0);
+    }
+
+    function experimentData() {
+      return {
+        experiment_id: EXPERIMENT_ID,
+        participant_id: state.participantId,
+        cardset: state.cardset,
+        date: localDateString(),
+        total_trials: state.totalTrials,
+        cards_per_trial: CARDS_PER_TRIAL,
+        card_id_range: [CARD_ID_MIN, CARD_ID_MAX],
+        criterion_card_id_range: [CRITERION_CARD_ID_MIN, CRITERION_CARD_ID_MAX],
+        trials: state.trials
+      };
+    }
+
+    function escapeCsv(value) {
+      const text = value === null || value === undefined ? "" : String(value);
+      if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    }
+
+    function toCsv(data) {
+      const header = [
+        "participant_id",
+        "cardset",
+        "trial_id",
+        "criterion_card_id",
+        "criterion_label",
+        "rank",
+        "card_id",
+        "judgment_basis"
+      ];
+
+      const rows = [header];
+      data.trials.forEach(trial => {
+        trial.ranking.forEach(item => {
+          rows.push([
+            data.participant_id,
+            data.cardset,
+            trial.trial_id,
+            trial.criterion_card_id,
+            trial.criterion_label,
+            item.rank,
+            item.card_id,
+            trial.judgment_basis
+          ]);
+        });
+      });
+
+      return rows.map(row => row.map(escapeCsv).join(",")).join("\n");
+    }
+
+    function downloadText(filename, text, mimeType) {
+      const blob = new Blob([text], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function safeName(value) {
+      return String(value).trim().replace(/[^a-zA-Z0-9_-]+/g, "_") || "participant";
+    }
+
+    function downloadJson() {
+      const data = experimentData();
+      const filename = `${safeName(data.participant_id)}_${data.cardset}_${data.date}_ranking.json`;
+      downloadText(filename, JSON.stringify(data, null, 2), "application/json;charset=utf-8");
+      showMessage(els.exportMessage, `JSON exported: ${filename}`, "success");
+    }
+
+    function downloadCsv() {
+      const data = experimentData();
+      const filename = `${safeName(data.participant_id)}_${data.cardset}_${data.date}_ranking.csv`;
+      downloadText(filename, toCsv(data), "text/csv;charset=utf-8");
+      showMessage(els.exportMessage, `CSV exported: ${filename}`, "success");
+    }
+
+    function editLastTrial() {
+      state.currentTrialIndex = Math.max(0, state.trials.length - 1);
+      showTrialScreen();
+    }
+
+    function resetSession() {
+      if (!window.confirm("Discard the current input data and start a new session?")) {
+        return;
+      }
+      state.participantId = "";
+      state.cardset = "card_a";
+      state.totalTrials = TOTAL_TRIALS;
+      state.currentTrialIndex = 0;
+      state.trials = [];
+      els.participantId.value = "";
+      els.cardset.value = "card_a";
+      clearTrialForm();
+      els.setupPanel.style.display = "block";
+      els.trialPanel.style.display = "none";
+      els.completePanel.style.display = "none";
+      showMessage(els.setupMessage, "", "");
+      setTimeout(() => els.participantId.focus(), 0);
+    }
+
+    updateTodayText();
+    setInterval(updateTodayText, 60 * 1000);
+    buildRankInputs();
+
+    els.startBtn.addEventListener("click", startSession);
+    els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
+    els.prevBtn.addEventListener("click", goPreviousTrial);
+    els.resetBtn.addEventListener("click", resetSession);
+    els.downloadJsonBtn.addEventListener("click", downloadJson);
+    els.downloadCsvBtn.addEventListener("click", downloadCsv);
+    els.editLastBtn.addEventListener("click", editLastTrial);
+    els.newSessionBtn.addEventListener("click", resetSession);
+
+    document.addEventListener("keydown", event => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && els.trialPanel.style.display === "block") {
+        saveCurrentTrial();
+      }
+    });
+  </script>
+</body>
+</html>
