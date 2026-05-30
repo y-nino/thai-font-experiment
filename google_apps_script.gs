@@ -2,6 +2,7 @@ const SHEET_NAME = "responses";
 const JSON_FOLDER_NAME = "thai_font_experiment_json_backup";
 const CSV_FOLDER_NAME = "thai_font_experiment_csv_backup";
 const SPREADSHEET_ID = "1Cve3Jz5TAMvUyGzq2iCxjLmToDc40egnZkDOxMbdfb8";
+const SUBMISSION_TOKEN = "thai-font-exp-2026-05-30";
 
 const HEADERS = [
   "submission_id",
@@ -115,6 +116,9 @@ function validatePayload(payload) {
   if (!payload.submission_id) {
     throw new Error("submission_id is required.");
   }
+  if (payload.submission_token !== SUBMISSION_TOKEN) {
+    throw new Error("Invalid submission token.");
+  }
   if (!payload.participant_id || !/^S([1-9]|[1-3][0-9]|40)$/.test(payload.participant_id)) {
     throw new Error("participant_id must be S1-S40.");
   }
@@ -129,9 +133,14 @@ function validatePayload(payload) {
     if (!Array.isArray(trial.ranking) || trial.ranking.length !== 10) {
       throw new Error("Each trial must contain exactly 10 ranking rows.");
     }
+    const cardIds = trial.ranking.map(item => item.card_id);
+    const duplicateCardIds = cardIds.filter((id, index) => cardIds.indexOf(id) !== index);
+    if (duplicateCardIds.length > 0) {
+      throw new Error("Each trial must not contain duplicate card_id letters.");
+    }
     trial.ranking.forEach(item => {
-      if (!Number.isInteger(item.card_id) || item.card_id < 1 || item.card_id > 40) {
-        throw new Error("card_id must be an integer from 1 to 40.");
+      if (typeof item.card_id !== "string" || !/^[A-J]$/.test(item.card_id)) {
+        throw new Error("card_id must be a letter from A to J.");
       }
       if (!Number.isInteger(item.rank) || item.rank < 1 || item.rank > 10) {
         throw new Error("rank must be an integer from 1 to 10.");

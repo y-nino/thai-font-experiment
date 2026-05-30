@@ -11,14 +11,14 @@
       --panel: #ffffff;
       --text: #1f2933;
       --muted: #667085;
-      --placeholder: #7fa39b;
+      --placeholder: #6f89a8;
       --line: #d8ded8;
-      --accent: #256f6c;
-      --accent-dark: #1d5856;
-      --danger: #b42318;
-      --danger-bg: #fff3f0;
-      --ok: #237a45;
-      --ok-bg: #eef8f1;
+      --accent: #1f6feb;
+      --accent-dark: #174ea6;
+      --danger: #8a3f00;
+      --danger-bg: #fff8eb;
+      --ok: #1f5fbf;
+      --ok-bg: #eef5ff;
       --field: #fbfcfb;
       --shadow: 0 8px 26px rgba(31, 41, 51, 0.08);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -160,13 +160,13 @@
     }
 
     button.danger {
-      background: #fff0ed;
+      background: #fff8eb;
       color: var(--danger);
-      border: 1px solid #ffd2ca;
+      border: 1px solid #f0b45a;
     }
 
     button.danger:hover {
-      background: #ffe4df;
+      background: #ffefd1;
     }
 
     button:disabled {
@@ -318,7 +318,7 @@
       display: block;
       color: var(--danger);
       background: var(--danger-bg);
-      border: 1px solid #ffd0c7;
+      border: 1px solid #f0b45a;
     }
 
     .message.success {
@@ -388,7 +388,7 @@
       }
 
       .card-id-guide svg {
-        width: min(230px, 70vw);
+        width: min(170px, 48vw);
         margin: 0 auto;
       }
 
@@ -460,8 +460,8 @@
       </div>
 
       <div class="ranking-instruction">
-        <p>Enter the card_id from your sorted physical cards below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. Enter numbers only: a7 / b7 should be entered as 7.</p>
-        <p>กรอก card_id จากการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด กรอกเฉพาะตัวเลข: a7 / b7 ให้กรอกเป็น 7</p>
+        <p>Enter the letter from the upper-right corner of each sorted physical card below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. You can enter lowercase or uppercase letters.</p>
+        <p>กรอกตัวอักษรที่มุมขวาบนของการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด สามารถกรอกตัวพิมพ์เล็กหรือพิมพ์ใหญ่ได้</p>
       </div>
 
       <div class="card-id-guide" aria-label="Card ID location guide">
@@ -470,13 +470,13 @@
           <rect x="14" y="14" width="112" height="112" rx="2" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"></rect>
           <line x1="34" y1="62" x2="82" y2="62" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
           <line x1="34" y1="82" x2="92" y2="82" stroke="#d1d5db" stroke-width="6" stroke-linecap="round"></line>
-          <circle cx="101" cy="38" r="20" fill="none" stroke="#d83a86" stroke-width="5"></circle>
-          <text x="88" y="47" font-size="26" font-weight="800" fill="#111827">a7</text>
+          <circle cx="101" cy="38" r="20" fill="none" stroke="#1f6feb" stroke-width="5"></circle>
+          <text x="92" y="47" font-size="26" font-weight="800" fill="#111827">A</text>
         </svg>
         <div>
           <p class="guide-title">Where to find the card_id</p>
-          <p class="guide-copy">Use the small code in the upper-right corner of each physical card.</p>
-          <p class="guide-copy">ใช้รหัสขนาดเล็กที่มุมขวาบนของการ์ดจริง</p>
+          <p class="guide-copy">Use the small letter in the upper-right corner of each physical card.</p>
+          <p class="guide-copy">ใช้ตัวอักษรขนาดเล็กที่มุมขวาบนของการ์ดจริง</p>
         </div>
       </div>
 
@@ -510,11 +510,11 @@
     const EXPERIMENT_ID = "thai_card_ranking_test";
     const TOTAL_TRIALS = 10;
     const CARDS_PER_TRIAL = 10;
-    const CARD_ID_MIN = 1;
-    const CARD_ID_MAX = 40;
+    const CARD_ID_VALUES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const CRITERION_CARD_ID_MIN = 1;
     const CRITERION_CARD_ID_MAX = 15;
     const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwE8eWyqqGTFLd-lMS26ydsNfcCxRSnU3fhi3QE6ktEEhelo8UfpyqK3f97LdCeaFD0/exec";
+    const SUBMISSION_TOKEN = "thai-font-exp-2026-05-30";
 
     const state = {
       participantId: "",
@@ -587,11 +587,22 @@
       }
     }
 
-    function parseCardId(value) {
+    function parseCriterionCardId(value) {
       const trimmed = String(value).trim();
       if (trimmed === "") return null;
       if (!/^\d+$/.test(trimmed)) return NaN;
       return Number(trimmed);
+    }
+
+    function normalizeCardId(value) {
+      const trimmed = String(value).trim();
+      if (trimmed === "") return null;
+      const normalized = trimmed.toUpperCase();
+      return /^[A-J]$/.test(normalized) ? normalized : NaN;
+    }
+
+    function cleanCardIdInput(input) {
+      input.value = input.value.toUpperCase().replace(/[^A-J]/g, "").slice(0, 1);
     }
 
     function normalizeParticipantId(value) {
@@ -617,14 +628,14 @@
 
         const input = document.createElement("input");
         input.className = "rank-input";
-        input.type = "number";
-        input.inputMode = "numeric";
-        input.min = String(CARD_ID_MIN);
-        input.max = String(CARD_ID_MAX);
-        input.step = "1";
-        input.placeholder = rank === 1 ? "card_id" : "";
+        input.type = "text";
+        input.inputMode = "text";
+        input.maxLength = 1;
+        input.autocapitalize = "characters";
+        input.placeholder = rank === 1 ? "A-J" : "";
         input.dataset.rank = String(rank);
         input.setAttribute("aria-label", `Rank ${rank} card_id`);
+        input.addEventListener("input", () => cleanCardIdInput(input));
 
         row.appendChild(label);
         row.appendChild(input);
@@ -639,12 +650,12 @@
     function collectTrialForm() {
       const ranking = rankInputs().map((input, index) => ({
         rank: index + 1,
-        card_id: parseCardId(input.value)
+        card_id: normalizeCardId(input.value)
       }));
 
       return {
         criterion_label: els.criterionLabel.value.trim(),
-        criterion_card_id: parseCardId(els.criterionCardId.value),
+        criterion_card_id: parseCriterionCardId(els.criterionCardId.value),
         judgment_basis: els.judgmentBasis.value.trim(),
         ranking
       };
@@ -656,7 +667,7 @@
         .filter(item => item.card_id === null)
         .map(item => item.rank);
       const invalidRanks = form.ranking
-        .filter(item => Number.isNaN(item.card_id) || item.card_id < CARD_ID_MIN || item.card_id > CARD_ID_MAX)
+        .filter(item => Number.isNaN(item.card_id))
         .map(item => item.rank);
       const ids = form.ranking
         .map(item => item.card_id)
@@ -674,7 +685,7 @@
         errors.push(`Duplicate card_id value(s): ${uniqueDuplicates.join(", ")}.`);
       }
       if (invalidRanks.length > 0) {
-        errors.push(`card_id must be an integer from ${CARD_ID_MIN} to ${CARD_ID_MAX}. Invalid rank(s): ${invalidRanks.join(", ")}.`);
+        errors.push(`card_id must be a letter from A to J. Invalid rank(s): ${invalidRanks.join(", ")}.`);
       }
       if (form.criterion_card_id === null) {
         errors.push("criterion_card_id is required.");
@@ -818,9 +829,10 @@
         date: localDateString(),
         submitted_at: new Date().toISOString(),
         submission_id: state.submissionId || createSubmissionId(),
+        submission_token: SUBMISSION_TOKEN,
         total_trials: state.totalTrials,
         cards_per_trial: CARDS_PER_TRIAL,
-        card_id_range: [CARD_ID_MIN, CARD_ID_MAX],
+        card_id_values: CARD_ID_VALUES,
         criterion_card_id_range: [CRITERION_CARD_ID_MIN, CRITERION_CARD_ID_MAX],
         trials: state.trials
       };
