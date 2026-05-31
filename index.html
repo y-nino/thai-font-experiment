@@ -576,7 +576,7 @@
       <div class="trial-fields">
         <div>
           <label for="impressionCardNumber">Impression card number *</label>
-          <input id="impressionCardNumber" type="number" inputmode="numeric" min="1" max="15" step="1" required>
+          <input id="impressionCardNumber" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required>
         </div>
         <div>
           <label for="impressionWord">Impression word *</label>
@@ -802,6 +802,25 @@
       return Number(trimmed);
     }
 
+    function cleanImpressionCardNumberInput(input) {
+      const digits = input.value.replace(/\D/g, "").slice(0, 2);
+
+      if (digits === "") {
+        input.value = "";
+        input.dataset.lastValid = "";
+        return;
+      }
+
+      const number = Number(digits);
+      if (number >= IMPRESSION_CARD_NUMBER_MIN && number <= IMPRESSION_CARD_NUMBER_MAX) {
+        input.value = String(number);
+        input.dataset.lastValid = input.value;
+        return;
+      }
+
+      input.value = input.dataset.lastValid || "";
+    }
+
     function normalizeCardId(value) {
       const trimmed = String(value).trim();
       if (trimmed === "") return null;
@@ -913,6 +932,7 @@
     function clearTrialForm() {
       els.impressionWord.value = "";
       els.impressionCardNumber.value = "";
+      els.impressionCardNumber.dataset.lastValid = "";
       els.judgmentBasis.value = "";
       rankInputs().forEach(input => {
         input.value = "";
@@ -923,6 +943,7 @@
     function loadTrialForm(trial) {
       els.impressionWord.value = trial ? trial.impression_word : "";
       els.impressionCardNumber.value = trial && trial.impression_card_number !== null ? trial.impression_card_number : "";
+      els.impressionCardNumber.dataset.lastValid = els.impressionCardNumber.value;
       els.judgmentBasis.value = trial ? trial.judgment_basis : "";
       rankInputs().forEach((input, index) => {
         input.value = trial && trial.ranking[index] ? trial.ranking[index].card_id : "";
@@ -1162,6 +1183,7 @@
     els.submitGoogleBtn.addEventListener("click", submitToGoogleDrive);
     els.editLastBtn.addEventListener("click", editLastTrial);
     els.newSessionBtn.addEventListener("click", resetSession);
+    els.impressionCardNumber.addEventListener("input", () => cleanImpressionCardNumberInput(els.impressionCardNumber));
 
     document.addEventListener("keydown", event => {
       if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && els.trialPanel.style.display === "block") {
