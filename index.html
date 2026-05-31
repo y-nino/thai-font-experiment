@@ -558,25 +558,27 @@
         <svg viewBox="0 0 140 140" role="img" aria-labelledby="impressionGuideTitle">
           <title id="impressionGuideTitle">Example impression card showing impression card number and impression word</title>
           <rect x="14" y="14" width="112" height="112" rx="2" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"></rect>
-          <circle cx="70" cy="48" r="22" fill="#d97706"></circle>
-          <text x="63" y="58" font-size="30" font-weight="800" fill="#ffffff">1</text>
-          <text x="45" y="92" font-size="16" font-weight="800" fill="#111827">Formal</text>
+          <circle cx="70" cy="54" r="22" fill="#d97706"></circle>
+          <text x="63" y="64" font-size="30" font-weight="800" fill="#ffffff">1</text>
+          <text x="45" y="99" font-size="16" font-weight="800" fill="#111827">Formal</text>
         </svg>
         <div>
           <p class="guide-title">Where to find the impression word and impression card number</p>
-          <p class="guide-copy">Number in the circle: 1 → impression card number</p>
-          <p class="guide-copy">Text below the circle: Formal → impression word</p>
+          <p class="guide-copy">Use the number in the circle for impression card number.</p>
+          <p class="guide-copy">Use the word below the circle for impression word.</p>
+          <p class="guide-copy">ตัวเลขในวงกลม: 1 → impression card number</p>
+          <p class="guide-copy">คำใต้วงกลม: Formal → impression word</p>
         </div>
       </div>
 
       <div class="trial-fields">
         <div>
-          <label for="impressionWord">Impression word / คำแสดงความประทับใจ *</label>
-          <input id="impressionWord" type="text" autocomplete="off" placeholder="Example: Formal" required>
-        </div>
-        <div>
           <label for="impressionCardNumber">Impression card number / หมายเลขการ์ดคำแสดงความประทับใจ *</label>
           <input id="impressionCardNumber" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="Example: 2" required>
+        </div>
+        <div>
+          <label for="impressionWord">Impression word / คำแสดงความประทับใจ *</label>
+          <input id="impressionWord" type="text" autocomplete="off" placeholder="Example: Formal" required>
         </div>
       </div>
 
