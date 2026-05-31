@@ -136,6 +136,66 @@
       opacity: 0.55;
     }
 
+    .field-help {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .order-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .order-options.is-disabled {
+      opacity: 0.55;
+    }
+
+    .order-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid #bfc9c4;
+      border-radius: 8px;
+      background: var(--field);
+      color: var(--text);
+      font-weight: 650;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .order-option:hover {
+      background: #ffffff;
+      border-color: var(--accent);
+    }
+
+    .order-option.is-selected {
+      background: #eef5ff;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.14);
+      color: var(--accent-dark);
+    }
+
+    .order-option:disabled {
+      opacity: 1;
+    }
+
+    .order-option[aria-disabled="true"] {
+      cursor: not-allowed;
+    }
+
+    .color-swatch {
+      width: 34px;
+      height: 18px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(31, 41, 51, 0.22);
+      border-radius: 4px;
+    }
+
     textarea {
       min-height: 96px;
       resize: vertical;
@@ -457,7 +517,7 @@
     <section class="panel" id="setupPanel" aria-label="Experiment setup">
       <div class="setup-grid">
         <div>
-          <label for="participantId">participant_id</label>
+          <label for="participantId">participant id</label>
           <input id="participantId" type="text" autocomplete="off" placeholder="Example: S1" required>
         </div>
         <div>
@@ -469,10 +529,9 @@
           </select>
         </div>
         <div>
-          <label for="cardOrderColor">card order color *</label>
-          <select id="cardOrderColor" class="placeholder-selected" required disabled>
-            <option value="" selected disabled>Select / เลือก</option>
-          </select>
+          <label id="cardOrderLabel">Card order / カード順序 *</label>
+          <div class="order-options is-disabled" id="cardOrderOptions" role="radiogroup" aria-labelledby="cardOrderLabel"></div>
+          <p class="field-help">Select the order version shown by the color on the physical cards.</p>
         </div>
         <div>
           <button id="startBtn" type="button">Start</button>
@@ -526,8 +585,8 @@
       </div>
 
       <div class="ranking-instruction">
-        <p>กรอก card_id ที่มุมขวาบนของการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด สามารถกรอกตัวพิมพ์เล็กหรือพิมพ์ใหญ่ได้</p>
-        <p>Enter the card_id from the upper-right corner of each sorted physical card below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. You can enter lowercase or uppercase letters.</p>
+        <p>กรอก card id ที่มุมขวาบนของการ์ดจริงที่คุณจัดเรียงไว้ด้านล่าง Rank 1 คือความประทับใจที่มากที่สุด และ Rank 10 คือความประทับใจที่น้อยที่สุด สามารถกรอกตัวพิมพ์เล็กหรือพิมพ์ใหญ่ได้</p>
+        <p>Enter the card id from the upper-right corner of each sorted physical card below. Rank 1 is the strongest impression, and Rank 10 is the weakest impression. You can enter lowercase or uppercase letters.</p>
       </div>
 
       <div class="card-id-guide" aria-label="Card ID location guide">
@@ -540,9 +599,9 @@
           <text x="92" y="47" font-size="26" font-weight="800" fill="#111827">A</text>
         </svg>
         <div>
-          <p class="guide-title">Where to find the card_id</p>
-          <p class="guide-copy">ใช้ card_id ที่มุมขวาบนของการ์ดจริง</p>
-          <p class="guide-copy">Use the card_id in the upper-right corner of each physical card.</p>
+          <p class="guide-title">Where to find the card id</p>
+          <p class="guide-copy">ใช้ card id ที่มุมขวาบนของการ์ดจริง</p>
+          <p class="guide-copy">Use the card id in the upper-right corner of each physical card.</p>
         </div>
       </div>
 
@@ -581,9 +640,17 @@
     const CARD_ID_VALUES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
     const IMPRESSION_CARD_NUMBER_MIN = 1;
     const IMPRESSION_CARD_NUMBER_MAX = 15;
-    const CARD_ORDER_COLORS = {
-      card_a: ["purple", "green", "blue"],
-      card_b: ["yellow", "pink", "orange"]
+    const CARD_ORDER_OPTIONS = {
+      card_a: [
+        { order: 1, color: "purple", label: "Order 1 — Purple", swatch: "#6b2a86" },
+        { order: 2, color: "green", label: "Order 2 — Green", swatch: "#5f9b45" },
+        { order: 3, color: "blue", label: "Order 3 — Blue", swatch: "#1769b3" }
+      ],
+      card_b: [
+        { order: 1, color: "yellow", label: "Order 1 — Yellow", swatch: "#d7b51f" },
+        { order: 2, color: "pink", label: "Order 2 — Pink", swatch: "#c83f7f" },
+        { order: 3, color: "orange", label: "Order 3 — Orange", swatch: "#e88945" }
+      ]
     };
     const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwE8eWyqqGTFLd-lMS26ydsNfcCxRSnU3fhi3QE6ktEEhelo8UfpyqK3f97LdCeaFD0/exec";
     const SUBMISSION_TOKEN = "thai-font-exp-2026-05-30";
@@ -591,6 +658,7 @@
     const state = {
       participantId: "",
       cardSet: "",
+      cardOrder: "",
       cardOrderColor: "",
       totalTrials: TOTAL_TRIALS,
       currentTrialIndex: 0,
@@ -605,7 +673,7 @@
       setupMessage: document.getElementById("setupMessage"),
       participantId: document.getElementById("participantId"),
       cardSet: document.getElementById("cardSet"),
-      cardOrderColor: document.getElementById("cardOrderColor"),
+      cardOrderOptions: document.getElementById("cardOrderOptions"),
       startBtn: document.getElementById("startBtn"),
       trialPanel: document.getElementById("trialPanel"),
       trialTitle: document.getElementById("trialTitle"),
@@ -652,29 +720,63 @@
       updateSelectPlaceholderStyle(els.cardSet);
     }
 
-    function updateCardOrderColorPlaceholderStyle() {
-      updateSelectPlaceholderStyle(els.cardOrderColor);
-    }
-
-    function renderCardOrderColorOptions() {
+    function renderCardOrderOptions() {
       const selectedCardSet = els.cardSet.value;
-      els.cardOrderColor.innerHTML = '<option value="" selected disabled>Select / เลือก</option>';
+      state.cardOrder = "";
+      state.cardOrderColor = "";
+      els.cardOrderOptions.innerHTML = "";
 
-      if (!selectedCardSet || !CARD_ORDER_COLORS[selectedCardSet]) {
-        els.cardOrderColor.disabled = true;
-        els.cardOrderColor.value = "";
-        updateCardOrderColorPlaceholderStyle();
+      if (!selectedCardSet || !CARD_ORDER_OPTIONS[selectedCardSet]) {
+        els.cardOrderOptions.classList.add("is-disabled");
+        const placeholder = document.createElement("div");
+        placeholder.className = "order-option";
+        placeholder.textContent = "Select / เลือก";
+        placeholder.setAttribute("aria-disabled", "true");
+        els.cardOrderOptions.appendChild(placeholder);
         return;
       }
 
-      CARD_ORDER_COLORS[selectedCardSet].forEach(color => {
-        const option = document.createElement("option");
-        option.value = color;
-        option.textContent = color.charAt(0).toUpperCase() + color.slice(1);
-        els.cardOrderColor.appendChild(option);
+      els.cardOrderOptions.classList.remove("is-disabled");
+      CARD_ORDER_OPTIONS[selectedCardSet].forEach(option => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "order-option";
+        button.dataset.order = String(option.order);
+        button.dataset.color = option.color;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", "false");
+
+        const swatch = document.createElement("span");
+        swatch.className = "color-swatch";
+        swatch.style.backgroundColor = option.swatch;
+        swatch.setAttribute("aria-hidden", "true");
+
+        const label = document.createElement("span");
+        label.textContent = option.label;
+
+        button.appendChild(swatch);
+        button.appendChild(label);
+        button.addEventListener("click", () => selectCardOrder(option.order, option.color));
+        els.cardOrderOptions.appendChild(button);
       });
-      els.cardOrderColor.disabled = false;
-      updateCardOrderColorPlaceholderStyle();
+    }
+
+    function selectCardOrder(order, color) {
+      state.cardOrder = Number(order);
+      state.cardOrderColor = color;
+      Array.from(els.cardOrderOptions.querySelectorAll(".order-option")).forEach(option => {
+        const isSelected = option.dataset.order === String(order) && option.dataset.color === color;
+        option.classList.toggle("is-selected", isSelected);
+        option.setAttribute("aria-checked", isSelected ? "true" : "false");
+      });
+      showMessage(els.setupMessage, "", "");
+    }
+
+    function isValidCardOrder(cardSet, order, color) {
+      return Boolean(
+        CARD_ORDER_OPTIONS[cardSet] &&
+        CARD_ORDER_OPTIONS[cardSet].some(option => option.order === Number(order) && option.color === color)
+      );
     }
 
     function scrollToPanelTop(panel) {
@@ -739,9 +841,9 @@
         input.inputMode = "text";
         input.maxLength = 1;
         input.autocapitalize = "characters";
-        input.placeholder = rank === 1 ? "card_id" : "";
+        input.placeholder = rank === 1 ? "card id" : "";
         input.dataset.rank = String(rank);
-        input.setAttribute("aria-label", `Rank ${rank} card_id`);
+        input.setAttribute("aria-label", `Rank ${rank} card id`);
         input.addEventListener("input", () => cleanCardIdInput(input));
 
         row.appendChild(label);
@@ -783,24 +885,24 @@
       const uniqueDuplicates = Array.from(new Set(duplicates));
 
       if (missingRanks.length > 0) {
-        errors.push(`Missing card_id for rank(s): ${missingRanks.join(", ")}.`);
+        errors.push(`Missing card id for rank(s): ${missingRanks.join(", ")}.`);
       }
       if (form.ranking.length !== CARDS_PER_TRIAL || missingRanks.length > 0) {
-        errors.push(`Each trial must contain exactly ${CARDS_PER_TRIAL} card_id values.`);
+        errors.push(`Each trial must contain exactly ${CARDS_PER_TRIAL} card id values.`);
       }
       if (uniqueDuplicates.length > 0) {
-        errors.push(`Duplicate card_id value(s): ${uniqueDuplicates.join(", ")}.`);
+        errors.push(`Duplicate card id value(s): ${uniqueDuplicates.join(", ")}.`);
       }
       if (invalidRanks.length > 0) {
-        errors.push(`card_id must be a letter from A to J. Invalid rank(s): ${invalidRanks.join(", ")}.`);
+        errors.push(`card id must be a letter from A to J. Invalid rank(s): ${invalidRanks.join(", ")}.`);
       }
       if (form.impression_card_number === null) {
-        errors.push("impression_card_number is required.");
+        errors.push("impression card number is required.");
       } else if (Number.isNaN(form.impression_card_number) || form.impression_card_number < IMPRESSION_CARD_NUMBER_MIN || form.impression_card_number > IMPRESSION_CARD_NUMBER_MAX) {
-        errors.push(`impression_card_number must be an integer from ${IMPRESSION_CARD_NUMBER_MIN} to ${IMPRESSION_CARD_NUMBER_MAX}.`);
+        errors.push(`impression card number must be an integer from ${IMPRESSION_CARD_NUMBER_MIN} to ${IMPRESSION_CARD_NUMBER_MAX}.`);
       }
       if (form.impression_word === "") {
-        errors.push("impression_word is required.");
+        errors.push("impression word is required.");
       }
       if (form.judgment_basis === "") {
         errors.push("Judgment basis / เหตุผลในการตัดสิน is required.");
@@ -852,7 +954,7 @@
     function showCompleteScreen() {
       els.trialPanel.style.display = "none";
       els.completePanel.style.display = "block";
-      els.completeSummary.textContent = `${state.participantId}, ${state.cardSet}, ${state.cardOrderColor}, ${state.totalTrials} trials saved.`;
+      els.completeSummary.textContent = `${state.participantId}, ${state.cardSet}, order ${state.cardOrder}, ${state.cardOrderColor}, ${state.totalTrials} trials saved.`;
       els.submitGoogleBtn.disabled = state.submitted;
       showMessage(els.exportMessage, "", "");
     }
@@ -862,29 +964,28 @@
       const normalizedParticipantId = normalizeParticipantId(participantId);
 
       if (participantId === "") {
-        showMessage(els.setupMessage, "participant_id is required.", "error");
+        showMessage(els.setupMessage, "participant id is required.", "error");
         return;
       }
       if (normalizedParticipantId === null) {
-        showMessage(els.setupMessage, "participant_id must be S followed by a number from 1 to 40, for example S1.", "error");
+        showMessage(els.setupMessage, "participant id must be S followed by a number from 1 to 40, for example S1.", "error");
         return;
       }
 
       state.participantId = normalizedParticipantId;
       els.participantId.value = normalizedParticipantId;
       state.cardSet = els.cardSet.value;
-      state.cardOrderColor = els.cardOrderColor.value;
 
       if (state.cardSet === "") {
-        showMessage(els.setupMessage, "card_set is required.", "error");
+        showMessage(els.setupMessage, "card set is required.", "error");
         return;
       }
-      if (state.cardOrderColor === "") {
-        showMessage(els.setupMessage, "card_order_color is required.", "error");
+      if (state.cardOrder === "" || state.cardOrderColor === "") {
+        showMessage(els.setupMessage, "card order is required.", "error");
         return;
       }
-      if (!CARD_ORDER_COLORS[state.cardSet].includes(state.cardOrderColor)) {
-        showMessage(els.setupMessage, "card_order_color does not match the selected card_set.", "error");
+      if (!isValidCardOrder(state.cardSet, state.cardOrder, state.cardOrderColor)) {
+        showMessage(els.setupMessage, "card order does not match the selected card set.", "error");
         return;
       }
 
@@ -948,6 +1049,7 @@
         experiment_id: EXPERIMENT_ID,
         participant_id: state.participantId,
         card_set: state.cardSet,
+        card_order: state.cardOrder,
         card_order_color: state.cardOrderColor,
         date: localDateString(),
         submitted_at: new Date().toISOString(),
@@ -964,7 +1066,7 @@
     function createSubmissionId() {
       if (state.submissionId !== "") return state.submissionId;
       const randomPart = Math.random().toString(36).slice(2, 10);
-      state.submissionId = `${safeName(state.participantId)}_${state.cardSet}_${safeName(state.cardOrderColor)}_${Date.now()}_${randomPart}`;
+      state.submissionId = `${safeName(state.participantId)}_${state.cardSet}_order${state.cardOrder}_${safeName(state.cardOrderColor)}_${Date.now()}_${randomPart}`;
       return state.submissionId;
     }
 
@@ -1024,6 +1126,7 @@
       }
       state.participantId = "";
       state.cardSet = "";
+      state.cardOrder = "";
       state.cardOrderColor = "";
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
@@ -1032,7 +1135,7 @@
       state.submitted = false;
       els.participantId.value = "";
       els.cardSet.value = "";
-      renderCardOrderColorOptions();
+      renderCardOrderOptions();
       updateCardSetPlaceholderStyle();
       clearTrialForm();
       els.setupPanel.style.display = "block";
@@ -1046,14 +1149,13 @@
     setInterval(updateTodayText, 60 * 1000);
     buildRankInputs();
     updateCardSetPlaceholderStyle();
-    renderCardOrderColorOptions();
+    renderCardOrderOptions();
 
     els.startBtn.addEventListener("click", startSession);
     els.cardSet.addEventListener("change", () => {
       updateCardSetPlaceholderStyle();
-      renderCardOrderColorOptions();
+      renderCardOrderOptions();
     });
-    els.cardOrderColor.addEventListener("change", updateCardOrderColorPlaceholderStyle);
     els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
     els.prevBtn.addEventListener("click", goPreviousTrial);
     els.resetBtn.addEventListener("click", resetSession);

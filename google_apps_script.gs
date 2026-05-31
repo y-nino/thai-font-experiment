@@ -10,6 +10,7 @@ const HEADERS = [
   "experiment_id",
   "participant_id",
   "card_set",
+  "card_order",
   "card_order_color",
   "date",
   "trial_number",
@@ -51,6 +52,7 @@ function doPost(e) {
         payload.experiment_id,
         payload.participant_id,
         payload.card_set,
+        payload.card_order,
         payload.card_order_color,
         payload.date,
         trial.trial_number,
@@ -132,8 +134,14 @@ function validatePayload(payload) {
   if (!payload.card_set || !/^card_[ab]$/.test(payload.card_set)) {
     throw new Error("card_set must be card_a or card_b.");
   }
-  if (!payload.card_order_color || !isValidCardOrderColor(payload.card_set, payload.card_order_color)) {
-    throw new Error("card_order_color does not match the selected card_set.");
+  if (typeof payload.card_order === "string" && /^[1-3]$/.test(payload.card_order)) {
+    payload.card_order = Number(payload.card_order);
+  }
+  if (!Number.isInteger(payload.card_order) || payload.card_order < 1 || payload.card_order > 3) {
+    throw new Error("card_order must be an integer from 1 to 3.");
+  }
+  if (!payload.card_order_color || !isValidCardOrder(payload.card_set, payload.card_order, payload.card_order_color)) {
+    throw new Error("card_order and card_order_color do not match the selected card_set.");
   }
   if (!Array.isArray(payload.trials) || payload.trials.length !== 10) {
     throw new Error("Exactly 10 trials are required.");
@@ -168,12 +176,21 @@ function validatePayload(payload) {
   });
 }
 
-function isValidCardOrderColor(cardSet, color) {
-  const colorsByCardSet = {
-    card_a: ["purple", "green", "blue"],
-    card_b: ["yellow", "pink", "orange"]
+function isValidCardOrder(cardSet, order, color) {
+  const optionsByCardSet = {
+    card_a: [
+      { order: 1, color: "purple" },
+      { order: 2, color: "green" },
+      { order: 3, color: "blue" }
+    ],
+    card_b: [
+      { order: 1, color: "yellow" },
+      { order: 2, color: "pink" },
+      { order: 3, color: "orange" }
+    ]
   };
-  return colorsByCardSet[cardSet] && colorsByCardSet[cardSet].indexOf(color) !== -1;
+  return optionsByCardSet[cardSet] &&
+    optionsByCardSet[cardSet].some(option => option.order === order && option.color === color);
 }
 
 function getOrCreateSheet(spreadsheet, sheetName) {
@@ -243,6 +260,7 @@ function toCsv(payload) {
         payload.experiment_id,
         payload.participant_id,
         payload.card_set,
+        payload.card_order,
         payload.card_order_color,
         payload.date,
         trial.trial_number,
