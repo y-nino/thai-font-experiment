@@ -317,6 +317,10 @@
       background: #f3f7f5;
     }
 
+    #trialPanel.hide-guides .card-id-guide {
+      display: none;
+    }
+
     .card-id-guide svg {
       display: block;
       width: 100%;
@@ -931,6 +935,7 @@
       els.trialTitle.textContent = `Trial ${trialNumber} / ${state.totalTrials}`;
       els.progressBar.style.width = `${Math.round((state.trials.length / state.totalTrials) * 100)}%`;
       els.prevBtn.disabled = state.currentTrialIndex === 0;
+      els.trialPanel.classList.toggle("hide-guides", state.currentTrialIndex !== 0);
 
       const savedCount = state.trials.length;
       els.savedList.textContent = savedCount === 0
