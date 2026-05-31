@@ -396,6 +396,7 @@
       text-align: center;
       font-size: 20px;
       font-weight: 700;
+      text-transform: uppercase;
     }
 
     .rank-input::placeholder {
@@ -859,6 +860,12 @@
         input.inputMode = "text";
         input.maxLength = 1;
         input.autocapitalize = "characters";
+        input.autocomplete = "off";
+        input.spellcheck = false;
+        input.pattern = "[A-Ja-j]";
+        input.lang = "en";
+        input.setAttribute("autocorrect", "off");
+        input.setAttribute("enterkeyhint", rank < CARDS_PER_TRIAL ? "next" : "done");
         input.placeholder = rank === 1 ? "card id" : "";
         input.dataset.rank = String(rank);
         input.setAttribute("aria-label", `Rank ${rank} card id`);
