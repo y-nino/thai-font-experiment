@@ -9,11 +9,12 @@ const HEADERS = [
   "submitted_at",
   "experiment_id",
   "participant_id",
-  "cardset",
+  "card_set",
+  "card_order_color",
   "date",
-  "trial_id",
-  "criterion_card_id",
-  "criterion_label",
+  "trial_number",
+  "impression_card_number",
+  "impression_word",
   "rank",
   "card_id",
   "judgment_basis"
@@ -49,11 +50,12 @@ function doPost(e) {
         payload.submitted_at,
         payload.experiment_id,
         payload.participant_id,
-        payload.cardset,
+        payload.card_set,
+        payload.card_order_color,
         payload.date,
-        trial.trial_id,
-        trial.criterion_card_id,
-        trial.criterion_label,
+        trial.trial_number,
+        trial.impression_card_number,
+        trial.impression_word,
         item.rank,
         item.card_id,
         trial.judgment_basis
@@ -127,14 +129,26 @@ function validatePayload(payload) {
   if (!payload.participant_id || !/^S([1-9]|[1-3][0-9]|40)$/.test(payload.participant_id)) {
     throw new Error("participant_id must be S1-S40.");
   }
-  if (!payload.cardset || !/^card_[ab]$/.test(payload.cardset)) {
-    throw new Error("cardset must be card_a or card_b.");
+  if (!payload.card_set || !/^card_[ab]$/.test(payload.card_set)) {
+    throw new Error("card_set must be card_a or card_b.");
+  }
+  if (!payload.card_order_color || !isValidCardOrderColor(payload.card_set, payload.card_order_color)) {
+    throw new Error("card_order_color does not match the selected card_set.");
   }
   if (!Array.isArray(payload.trials) || payload.trials.length !== 10) {
     throw new Error("Exactly 10 trials are required.");
   }
 
   payload.trials.forEach(trial => {
+    if (!Number.isInteger(trial.trial_number) || trial.trial_number < 1 || trial.trial_number > 10) {
+      throw new Error("trial_number must be an integer from 1 to 10.");
+    }
+    if (!Number.isInteger(trial.impression_card_number) || trial.impression_card_number < 1 || trial.impression_card_number > 15) {
+      throw new Error("impression_card_number must be an integer from 1 to 15.");
+    }
+    if (typeof trial.impression_word !== "string" || trial.impression_word.trim() === "") {
+      throw new Error("impression_word is required.");
+    }
     if (!Array.isArray(trial.ranking) || trial.ranking.length !== 10) {
       throw new Error("Each trial must contain exactly 10 ranking rows.");
     }
@@ -152,6 +166,14 @@ function validatePayload(payload) {
       }
     });
   });
+}
+
+function isValidCardOrderColor(cardSet, color) {
+  const colorsByCardSet = {
+    card_a: ["purple", "green", "blue"],
+    card_b: ["yellow", "pink", "orange"]
+  };
+  return colorsByCardSet[cardSet] && colorsByCardSet[cardSet].indexOf(color) !== -1;
 }
 
 function getOrCreateSheet(spreadsheet, sheetName) {
@@ -220,11 +242,12 @@ function toCsv(payload) {
         payload.submitted_at,
         payload.experiment_id,
         payload.participant_id,
-        payload.cardset,
+        payload.card_set,
+        payload.card_order_color,
         payload.date,
-        trial.trial_id,
-        trial.criterion_card_id,
-        trial.criterion_label,
+        trial.trial_number,
+        trial.impression_card_number,
+        trial.impression_word,
         item.rank,
         item.card_id,
         trial.judgment_basis

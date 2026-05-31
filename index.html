@@ -82,7 +82,7 @@
 
     .setup-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       align-items: end;
     }
@@ -129,6 +129,11 @@
 
     select option {
       color: var(--text);
+    }
+
+    select:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
     }
 
     textarea {
@@ -456,11 +461,17 @@
           <input id="participantId" type="text" autocomplete="off" placeholder="Example: S1" required>
         </div>
         <div>
-          <label for="cardset">cardset</label>
-          <select id="cardset" class="placeholder-selected" required>
+          <label for="cardSet">card set</label>
+          <select id="cardSet" class="placeholder-selected" required>
             <option value="" selected disabled>Select / เลือก</option>
-            <option value="card_a">card_set A</option>
-            <option value="card_b">card_set B</option>
+            <option value="card_a">card set A</option>
+            <option value="card_b">card set B</option>
+          </select>
+        </div>
+        <div>
+          <label for="cardOrderColor">card order color *</label>
+          <select id="cardOrderColor" class="placeholder-selected" required disabled>
+            <option value="" selected disabled>Select / เลือก</option>
           </select>
         </div>
         <div>
@@ -486,12 +497,31 @@
 
       <div class="trial-fields">
         <div>
-          <label for="criterionLabel">criterion_label *</label>
-          <input id="criterionLabel" type="text" autocomplete="off" placeholder="Example: Formal" required>
+          <label for="impressionWord">Impression word / คำแสดงความประทับใจ *</label>
+          <input id="impressionWord" type="text" autocomplete="off" placeholder="Example: Formal" required>
         </div>
         <div>
-          <label for="criterionCardId">criterion_card_id *</label>
-          <input id="criterionCardId" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="Example: 2" required>
+          <label for="impressionCardNumber">Impression card number / หมายเลขการ์ดคำแสดงความประทับใจ *</label>
+          <input id="impressionCardNumber" type="number" inputmode="numeric" min="1" max="15" step="1" placeholder="Example: 2" required>
+        </div>
+      </div>
+
+      <div class="card-id-guide" aria-label="Impression card location guide">
+        <svg viewBox="0 0 180 140" role="img" aria-labelledby="impressionGuideTitle">
+          <title id="impressionGuideTitle">Example impression card showing impression card number and impression word</title>
+          <rect x="18" y="16" width="118" height="108" rx="2" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"></rect>
+          <circle cx="77" cy="52" r="24" fill="#d97706"></circle>
+          <text x="70" y="62" font-size="30" font-weight="800" fill="#ffffff">1</text>
+          <text x="51" y="95" font-size="16" font-weight="800" fill="#111827">Formal</text>
+          <line x1="105" y1="52" x2="158" y2="35" stroke="#1f6feb" stroke-width="2"></line>
+          <circle cx="160" cy="34" r="3" fill="#1f6feb"></circle>
+          <line x1="101" y1="90" x2="158" y2="108" stroke="#1f6feb" stroke-width="2"></line>
+          <circle cx="160" cy="109" r="3" fill="#1f6feb"></circle>
+        </svg>
+        <div>
+          <p class="guide-title">Where to find the impression word and impression card number</p>
+          <p class="guide-copy">Number in the circle: 1 → impression card number</p>
+          <p class="guide-copy">Text below the circle: Formal → impression word</p>
         </div>
       </div>
 
@@ -549,14 +579,19 @@
     const TOTAL_TRIALS = 10;
     const CARDS_PER_TRIAL = 10;
     const CARD_ID_VALUES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-    const CRITERION_CARD_ID_MIN = 1;
-    const CRITERION_CARD_ID_MAX = 15;
+    const IMPRESSION_CARD_NUMBER_MIN = 1;
+    const IMPRESSION_CARD_NUMBER_MAX = 15;
+    const CARD_ORDER_COLORS = {
+      card_a: ["purple", "green", "blue"],
+      card_b: ["yellow", "pink", "orange"]
+    };
     const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwE8eWyqqGTFLd-lMS26ydsNfcCxRSnU3fhi3QE6ktEEhelo8UfpyqK3f97LdCeaFD0/exec";
     const SUBMISSION_TOKEN = "thai-font-exp-2026-05-30";
 
     const state = {
       participantId: "",
-      cardset: "",
+      cardSet: "",
+      cardOrderColor: "",
       totalTrials: TOTAL_TRIALS,
       currentTrialIndex: 0,
       trials: [],
@@ -569,15 +604,16 @@
       setupPanel: document.getElementById("setupPanel"),
       setupMessage: document.getElementById("setupMessage"),
       participantId: document.getElementById("participantId"),
-      cardset: document.getElementById("cardset"),
+      cardSet: document.getElementById("cardSet"),
+      cardOrderColor: document.getElementById("cardOrderColor"),
       startBtn: document.getElementById("startBtn"),
       trialPanel: document.getElementById("trialPanel"),
       trialTitle: document.getElementById("trialTitle"),
       progressBar: document.getElementById("progressBar"),
       prevBtn: document.getElementById("prevBtn"),
       resetBtn: document.getElementById("resetBtn"),
-      criterionLabel: document.getElementById("criterionLabel"),
-      criterionCardId: document.getElementById("criterionCardId"),
+      impressionWord: document.getElementById("impressionWord"),
+      impressionCardNumber: document.getElementById("impressionCardNumber"),
       judgmentBasis: document.getElementById("judgmentBasis"),
       rankGrid: document.getElementById("rankGrid"),
       saveTrialBtn: document.getElementById("saveTrialBtn"),
@@ -608,8 +644,37 @@
       element.className = text ? `message ${type}` : "message";
     }
 
-    function updateCardsetPlaceholderStyle() {
-      els.cardset.classList.toggle("placeholder-selected", els.cardset.value === "");
+    function updateSelectPlaceholderStyle(select) {
+      select.classList.toggle("placeholder-selected", select.value === "");
+    }
+
+    function updateCardSetPlaceholderStyle() {
+      updateSelectPlaceholderStyle(els.cardSet);
+    }
+
+    function updateCardOrderColorPlaceholderStyle() {
+      updateSelectPlaceholderStyle(els.cardOrderColor);
+    }
+
+    function renderCardOrderColorOptions() {
+      const selectedCardSet = els.cardSet.value;
+      els.cardOrderColor.innerHTML = '<option value="" selected disabled>Select / เลือก</option>';
+
+      if (!selectedCardSet || !CARD_ORDER_COLORS[selectedCardSet]) {
+        els.cardOrderColor.disabled = true;
+        els.cardOrderColor.value = "";
+        updateCardOrderColorPlaceholderStyle();
+        return;
+      }
+
+      CARD_ORDER_COLORS[selectedCardSet].forEach(color => {
+        const option = document.createElement("option");
+        option.value = color;
+        option.textContent = color.charAt(0).toUpperCase() + color.slice(1);
+        els.cardOrderColor.appendChild(option);
+      });
+      els.cardOrderColor.disabled = false;
+      updateCardOrderColorPlaceholderStyle();
     }
 
     function scrollToPanelTop(panel) {
@@ -623,13 +688,13 @@
 
     function focusCriterionLabelWithoutScroll() {
       try {
-        els.criterionLabel.focus({ preventScroll: true });
+        els.impressionWord.focus({ preventScroll: true });
       } catch (error) {
-        els.criterionLabel.focus();
+        els.impressionWord.focus();
       }
     }
 
-    function parseCriterionCardId(value) {
+    function parseImpressionCardNumber(value) {
       const trimmed = String(value).trim();
       if (trimmed === "") return null;
       if (!/^\d+$/.test(trimmed)) return NaN;
@@ -696,8 +761,8 @@
       }));
 
       return {
-        criterion_label: els.criterionLabel.value.trim(),
-        criterion_card_id: parseCriterionCardId(els.criterionCardId.value),
+        impression_word: els.impressionWord.value.trim(),
+        impression_card_number: parseImpressionCardNumber(els.impressionCardNumber.value),
         judgment_basis: els.judgmentBasis.value.trim(),
         ranking
       };
@@ -729,13 +794,13 @@
       if (invalidRanks.length > 0) {
         errors.push(`card_id must be a letter from A to J. Invalid rank(s): ${invalidRanks.join(", ")}.`);
       }
-      if (form.criterion_card_id === null) {
-        errors.push("criterion_card_id is required.");
-      } else if (Number.isNaN(form.criterion_card_id) || form.criterion_card_id < CRITERION_CARD_ID_MIN || form.criterion_card_id > CRITERION_CARD_ID_MAX) {
-        errors.push(`criterion_card_id must be an integer from ${CRITERION_CARD_ID_MIN} to ${CRITERION_CARD_ID_MAX}.`);
+      if (form.impression_card_number === null) {
+        errors.push("impression_card_number is required.");
+      } else if (Number.isNaN(form.impression_card_number) || form.impression_card_number < IMPRESSION_CARD_NUMBER_MIN || form.impression_card_number > IMPRESSION_CARD_NUMBER_MAX) {
+        errors.push(`impression_card_number must be an integer from ${IMPRESSION_CARD_NUMBER_MIN} to ${IMPRESSION_CARD_NUMBER_MAX}.`);
       }
-      if (form.criterion_label === "") {
-        errors.push("criterion_label is required.");
+      if (form.impression_word === "") {
+        errors.push("impression_word is required.");
       }
       if (form.judgment_basis === "") {
         errors.push("Judgment basis / เหตุผลในการตัดสิน is required.");
@@ -745,8 +810,8 @@
     }
 
     function clearTrialForm() {
-      els.criterionLabel.value = "";
-      els.criterionCardId.value = "";
+      els.impressionWord.value = "";
+      els.impressionCardNumber.value = "";
       els.judgmentBasis.value = "";
       rankInputs().forEach(input => {
         input.value = "";
@@ -755,8 +820,8 @@
     }
 
     function loadTrialForm(trial) {
-      els.criterionLabel.value = trial ? trial.criterion_label : "";
-      els.criterionCardId.value = trial && trial.criterion_card_id !== null ? trial.criterion_card_id : "";
+      els.impressionWord.value = trial ? trial.impression_word : "";
+      els.impressionCardNumber.value = trial && trial.impression_card_number !== null ? trial.impression_card_number : "";
       els.judgmentBasis.value = trial ? trial.judgment_basis : "";
       rankInputs().forEach((input, index) => {
         input.value = trial && trial.ranking[index] ? trial.ranking[index].card_id : "";
@@ -787,7 +852,7 @@
     function showCompleteScreen() {
       els.trialPanel.style.display = "none";
       els.completePanel.style.display = "block";
-      els.completeSummary.textContent = `${state.participantId}, ${state.cardset}, ${state.totalTrials} trials saved.`;
+      els.completeSummary.textContent = `${state.participantId}, ${state.cardSet}, ${state.cardOrderColor}, ${state.totalTrials} trials saved.`;
       els.submitGoogleBtn.disabled = state.submitted;
       showMessage(els.exportMessage, "", "");
     }
@@ -807,10 +872,19 @@
 
       state.participantId = normalizedParticipantId;
       els.participantId.value = normalizedParticipantId;
-      state.cardset = els.cardset.value;
+      state.cardSet = els.cardSet.value;
+      state.cardOrderColor = els.cardOrderColor.value;
 
-      if (state.cardset === "") {
-        showMessage(els.setupMessage, "cardset is required.", "error");
+      if (state.cardSet === "") {
+        showMessage(els.setupMessage, "card_set is required.", "error");
+        return;
+      }
+      if (state.cardOrderColor === "") {
+        showMessage(els.setupMessage, "card_order_color is required.", "error");
+        return;
+      }
+      if (!CARD_ORDER_COLORS[state.cardSet].includes(state.cardOrderColor)) {
+        showMessage(els.setupMessage, "card_order_color does not match the selected card_set.", "error");
         return;
       }
 
@@ -821,7 +895,7 @@
       state.submitted = false;
       showMessage(els.setupMessage, "", "");
       showTrialScreen();
-      setTimeout(() => els.criterionLabel.focus(), 0);
+      setTimeout(() => els.impressionWord.focus(), 0);
     }
 
     function saveCurrentTrial() {
@@ -834,9 +908,9 @@
       }
 
       const trial = {
-        trial_id: state.currentTrialIndex + 1,
-        criterion_card_id: form.criterion_card_id,
-        criterion_label: form.criterion_label,
+        trial_number: state.currentTrialIndex + 1,
+        impression_card_number: form.impression_card_number,
+        impression_word: form.impression_word,
         judgment_basis: form.judgment_basis,
         ranking: form.ranking.map(item => ({
           rank: item.rank,
@@ -856,7 +930,7 @@
       state.currentTrialIndex += 1;
       clearTrialForm();
       renderProgress();
-      showMessage(els.trialMessage, `Trial ${trial.trial_id} saved.`, "success");
+      showMessage(els.trialMessage, `Trial ${trial.trial_number} saved.`, "success");
       scrollToPanelTop(els.trialPanel);
       setTimeout(focusCriterionLabelWithoutScroll, 0);
     }
@@ -866,14 +940,15 @@
       state.currentTrialIndex -= 1;
       renderProgress();
       loadTrialForm(state.trials[state.currentTrialIndex]);
-      setTimeout(() => els.criterionLabel.focus(), 0);
+      setTimeout(() => els.impressionWord.focus(), 0);
     }
 
     function experimentData() {
       return {
         experiment_id: EXPERIMENT_ID,
         participant_id: state.participantId,
-        cardset: state.cardset,
+        card_set: state.cardSet,
+        card_order_color: state.cardOrderColor,
         date: localDateString(),
         submitted_at: new Date().toISOString(),
         submission_id: state.submissionId || createSubmissionId(),
@@ -881,7 +956,7 @@
         total_trials: state.totalTrials,
         cards_per_trial: CARDS_PER_TRIAL,
         card_id_values: CARD_ID_VALUES,
-        criterion_card_id_range: [CRITERION_CARD_ID_MIN, CRITERION_CARD_ID_MAX],
+        impression_card_number_range: [IMPRESSION_CARD_NUMBER_MIN, IMPRESSION_CARD_NUMBER_MAX],
         trials: state.trials
       };
     }
@@ -889,7 +964,7 @@
     function createSubmissionId() {
       if (state.submissionId !== "") return state.submissionId;
       const randomPart = Math.random().toString(36).slice(2, 10);
-      state.submissionId = `${safeName(state.participantId)}_${state.cardset}_${Date.now()}_${randomPart}`;
+      state.submissionId = `${safeName(state.participantId)}_${state.cardSet}_${safeName(state.cardOrderColor)}_${Date.now()}_${randomPart}`;
       return state.submissionId;
     }
 
@@ -948,15 +1023,17 @@
         return;
       }
       state.participantId = "";
-      state.cardset = "";
+      state.cardSet = "";
+      state.cardOrderColor = "";
       state.totalTrials = TOTAL_TRIALS;
       state.currentTrialIndex = 0;
       state.trials = [];
       state.submissionId = "";
       state.submitted = false;
       els.participantId.value = "";
-      els.cardset.value = "";
-      updateCardsetPlaceholderStyle();
+      els.cardSet.value = "";
+      renderCardOrderColorOptions();
+      updateCardSetPlaceholderStyle();
       clearTrialForm();
       els.setupPanel.style.display = "block";
       els.trialPanel.style.display = "none";
@@ -968,10 +1045,15 @@
     updateTodayText();
     setInterval(updateTodayText, 60 * 1000);
     buildRankInputs();
-    updateCardsetPlaceholderStyle();
+    updateCardSetPlaceholderStyle();
+    renderCardOrderColorOptions();
 
     els.startBtn.addEventListener("click", startSession);
-    els.cardset.addEventListener("change", updateCardsetPlaceholderStyle);
+    els.cardSet.addEventListener("change", () => {
+      updateCardSetPlaceholderStyle();
+      renderCardOrderColorOptions();
+    });
+    els.cardOrderColor.addEventListener("change", updateCardOrderColorPlaceholderStyle);
     els.saveTrialBtn.addEventListener("click", saveCurrentTrial);
     els.prevBtn.addEventListener("click", goPreviousTrial);
     els.resetBtn.addEventListener("click", resetSession);
