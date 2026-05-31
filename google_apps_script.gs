@@ -34,6 +34,8 @@ function doPost(e) {
     const participantSheet = getOrCreateSheet(spreadsheet, participantSheetName(payload));
     ensureHeaderRow(masterSheet);
     ensureHeaderRow(participantSheet);
+    applyColumnFormats(masterSheet);
+    applyColumnFormats(participantSheet);
 
     if (hasSubmission(masterSheet, payload.submission_id)) {
       return jsonResponse({
@@ -224,7 +226,52 @@ function hasSubmission(sheet, submissionId) {
 }
 
 function appendRows(sheet, rows) {
-  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, HEADERS.length).setValues(rows);
+  const startRow = sheet.getLastRow() + 1;
+  const range = sheet.getRange(startRow, 1, rows.length, HEADERS.length);
+  range.setValues(rows);
+  applyRowFormats(sheet, startRow, rows.length);
+}
+
+function applyColumnFormats(sheet) {
+  const maxRows = sheet.getMaxRows();
+  if (maxRows < 2) return;
+  applyRowFormats(sheet, 2, maxRows - 1);
+}
+
+function applyRowFormats(sheet, startRow, rowCount) {
+  if (rowCount <= 0) return;
+
+  const plainTextHeaders = [
+    "submission_id",
+    "submitted_at",
+    "experiment_id",
+    "participant_id",
+    "card_set",
+    "card_order_color",
+    "date",
+    "impression_word",
+    "card_id",
+    "judgment_basis"
+  ];
+  const numberHeaders = [
+    "card_order",
+    "trial_number",
+    "impression_card_number",
+    "rank"
+  ];
+
+  plainTextHeaders.forEach(header => {
+    setColumnNumberFormat(sheet, header, startRow, rowCount, "@");
+  });
+  numberHeaders.forEach(header => {
+    setColumnNumberFormat(sheet, header, startRow, rowCount, "0");
+  });
+}
+
+function setColumnNumberFormat(sheet, header, startRow, rowCount, format) {
+  const columnIndex = HEADERS.indexOf(header) + 1;
+  if (columnIndex <= 0) return;
+  sheet.getRange(startRow, columnIndex, rowCount, 1).setNumberFormat(format);
 }
 
 function saveJsonBackup(payload) {
