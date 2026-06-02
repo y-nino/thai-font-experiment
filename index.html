@@ -82,9 +82,14 @@
 
     .setup-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(260px, 1.35fr) auto;
       gap: 14px;
-      align-items: end;
+      align-items: start;
+    }
+
+    .setup-action {
+      align-self: start;
+      padding-top: 25px;
     }
 
     label {
@@ -451,6 +456,10 @@
         grid-template-columns: 1fr;
       }
 
+      .setup-action {
+        padding-top: 0;
+      }
+
       header,
       .trial-head {
         display: block;
@@ -537,7 +546,7 @@
           <div class="order-options is-disabled" id="cardOrderOptions" role="radiogroup" aria-labelledby="cardOrderLabel"></div>
           <p class="field-help">Select the order version shown by the color on the physical cards.</p>
         </div>
-        <div>
+        <div class="setup-action">
           <button id="startBtn" type="button">Start</button>
         </div>
       </div>
